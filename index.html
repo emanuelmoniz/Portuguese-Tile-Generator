@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Portuguese Tile Generator</title>
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-100">
+  <header class="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-700">
+    <h1 class="text-xl font-semibold" data-i18n="title"></h1>
+    <div class="flex gap-2">
+      <button id="lang-toggle" type="button" data-i18n-title="langToggle" class="rounded border border-slate-300 px-3 py-1 text-sm dark:border-slate-600"></button>
+      <button id="theme-toggle" type="button" data-i18n-title="themeToggle" class="rounded border border-slate-300 px-3 py-1 text-sm dark:border-slate-600">&#9680;</button>
+    </div>
+  </header>
+
+  <main class="mx-auto grid max-w-6xl gap-6 p-4 md:grid-cols-[22rem_1fr]">
+    <section class="space-y-4">
+      <h2 class="text-lg font-medium" data-i18n="params"></h2>
+      <form id="params" class="space-y-4" onsubmit="return false">
+        <label class="block text-sm"><span data-i18n="size"></span> <span class="text-slate-500" data-i18n="sizeHint"></span>
+          <input id="size" type="number" min="15" max="200" value="60" class="mt-1 block w-full rounded border border-slate-300 bg-white px-2 py-1 dark:border-slate-600 dark:bg-slate-800" />
+        </label>
+        <label class="block text-sm"><span data-i18n="numColors"></span>
+          <select id="numColors" class="mt-1 block w-full rounded border border-slate-300 bg-white px-2 py-1 dark:border-slate-600 dark:bg-slate-800">
+            <option>2</option><option>3</option><option>4</option>
+          </select>
+        </label>
+        <fieldset class="space-y-2">
+          <legend class="text-sm"><span data-i18n="colors"></span> / <span data-i18n="percent"></span></legend>
+      <div id="row0" class="flex items-center gap-3">
+        <input id="color0" type="color" value="#f4efe6" class="h-9 w-12 cursor-pointer rounded border border-slate-300 dark:border-slate-600" />
+        <span class="w-20 text-sm"><span data-i18n="base"></span></span>
+      </div>
+      <div id="row1" class="flex items-center gap-3">
+        <input id="color1" type="color" value="#1d4e9e" class="h-9 w-12 cursor-pointer rounded border border-slate-300 dark:border-slate-600" />
+        <span class="w-20 text-sm"><span><span data-i18n="raised"></span> 1</span></span><input id="pct1" type="number" min="0" max="100" value="100" class="w-20 rounded border border-slate-300 bg-white px-2 py-1 dark:border-slate-600 dark:bg-slate-800" />
+      </div>
+      <div id="row2" class="flex items-center gap-3 hidden">
+        <input id="color2" type="color" value="#d9a21b" class="h-9 w-12 cursor-pointer rounded border border-slate-300 dark:border-slate-600" />
+        <span class="w-20 text-sm"><span><span data-i18n="raised"></span> 2</span></span><input id="pct2" type="number" min="0" max="100" value="0" class="w-20 rounded border border-slate-300 bg-white px-2 py-1 dark:border-slate-600 dark:bg-slate-800" />
+      </div>
+      <div id="row3" class="flex items-center gap-3 hidden">
+        <input id="color3" type="color" value="#2f7d4f" class="h-9 w-12 cursor-pointer rounded border border-slate-300 dark:border-slate-600" />
+        <span class="w-20 text-sm"><span><span data-i18n="raised"></span> 3</span></span><input id="pct3" type="number" min="0" max="100" value="0" class="w-20 rounded border border-slate-300 bg-white px-2 py-1 dark:border-slate-600 dark:bg-slate-800" />
+      </div>
+        </fieldset>
+        <label class="block text-sm"><span data-i18n="coverage"></span> <span class="text-slate-500" data-i18n="coverageHint"></span>
+          <input id="coverage" type="number" min="30" max="90" value="60" class="mt-1 block w-full rounded border border-slate-300 bg-white px-2 py-1 dark:border-slate-600 dark:bg-slate-800" />
+        </label>
+        <label class="block text-sm"><span data-i18n="border"></span>
+          <select id="border" class="mt-1 block w-full rounded border border-slate-300 bg-white px-2 py-1 dark:border-slate-600 dark:bg-slate-800">
+            <option value="on" data-i18n="borderOn"></option>
+            <option value="off" data-i18n="borderOff"></option>
+            <option value="random" data-i18n="borderRandom"></option>
+          </select>
+        </label>
+        <div class="flex items-center gap-2 text-sm">
+          <span data-i18n="seed"></span>: <output id="seed" class="font-mono">-</output>
+        </div>
+        <div class="flex gap-2">
+          <button id="generate" type="button" data-i18n="generate" class="rounded bg-blue-600 px-4 py-2 text-white"></button>
+          <button id="regenerate" type="button" data-i18n="regenerate" disabled class="rounded border border-slate-300 px-4 py-2 disabled:opacity-40 dark:border-slate-600"></button>
+        </div>
+      </form>
+    </section>
+
+    <section class="space-y-4">
+      <h2 class="text-lg font-medium" data-i18n="preview"></h2>
+      <div class="flex aspect-square max-h-[32rem] items-center justify-center rounded border border-dashed border-slate-300 dark:border-slate-600">
+        <canvas id="preview" class="hidden max-h-full max-w-full"></canvas>
+        <p class="p-4 text-center text-sm text-slate-500" data-i18n="previewEmpty"></p>
+      </div>
+      <h2 class="text-lg font-medium" data-i18n="report"></h2>
+      <div id="report" class="rounded border border-slate-200 p-3 text-sm text-slate-500 dark:border-slate-700" data-i18n="reportEmpty"></div>
+      <div class="flex flex-wrap gap-2">
+        <button id="saveSvg" type="button" disabled data-i18n="saveSvg" class="rounded border border-slate-300 px-3 py-2 disabled:opacity-40 dark:border-slate-600"></button>
+        <button id="savePng" type="button" disabled data-i18n="savePng" class="rounded border border-slate-300 px-3 py-2 disabled:opacity-40 dark:border-slate-600"></button>
+        <button id="open3d" type="button" disabled data-i18n="settings3d" class="rounded border border-slate-300 px-3 py-2 disabled:opacity-40 dark:border-slate-600"></button>
+        <button id="gen3mf" type="button" disabled data-i18n="gen3mf" class="rounded border border-slate-300 px-3 py-2 disabled:opacity-40 dark:border-slate-600"></button>
+        <button id="save3mf" type="button" disabled data-i18n="save3mf" class="rounded border border-slate-300 px-3 py-2 disabled:opacity-40 dark:border-slate-600"></button>
+        <button id="saveBundle" type="button" disabled data-i18n="saveBundle" class="rounded border border-slate-300 px-3 py-2 disabled:opacity-40 dark:border-slate-600"></button>
+        <button id="clear" type="button" disabled data-i18n="clear" class="rounded border border-red-300 px-3 py-2 text-red-700 disabled:opacity-40 dark:border-red-800 dark:text-red-400"></button>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="dlg3d" class="m-auto rounded bg-white p-6 text-slate-900 backdrop:bg-black/50 dark:bg-slate-800 dark:text-slate-100">
+    <h2 class="text-lg font-medium" data-i18n="dlg3d"></h2>
+    <form method="dialog" class="mt-4">
+      <button data-i18n="close" class="rounded border border-slate-300 px-3 py-2 dark:border-slate-600"></button>
+    </form>
+  </dialog>
+
+  <script src="vendor/clipper.js"></script>
+  <script src="vendor/earcut.min.js"></script>
+  <script src="vendor/fflate.min.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
