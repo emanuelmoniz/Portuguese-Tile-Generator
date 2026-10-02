@@ -51,4 +51,33 @@ assert(r.overlap < 0.01, 'no cross-color overlap');
 const svg = check.svgString(d.groups, ['#ffffff', '#0078BF', '#A3D8E1', '#F7D959'], d.size);
 assert.strictEqual((svg.match(/<g /g) || []).length, 3);
 assert(svg.includes('fill-rule="evenodd"') && svg.includes('<rect'));
+
+// ---- design engine: 8 cases, each within +-5%, clean channels and symmetry ----
+const fs = require('fs');
+const Engine = require('../js/engine.js');
+const COLORS = ['#FFFFFF', '#1F4E9E', '#F2C230', '#8CC4E8'];
+const CASES = [
+  { sizeMm: 15, percents: [100], coverage: 60, border: 'on' },
+  { sizeMm: 15, percents: [60, 40], coverage: 30, border: 'off' },
+  { sizeMm: 50, percents: [55, 45], coverage: 60, border: 'off' },
+  { sizeMm: 50, percents: [50, 30, 20], coverage: 90, border: 'on' },
+  { sizeMm: 100, percents: [40, 35, 25], coverage: 60, border: 'on' },
+  { sizeMm: 100, percents: [100], coverage: 30, border: 'off' },
+  { sizeMm: 200, percents: [50, 30, 20], coverage: 30, border: 'on' },
+  { sizeMm: 200, percents: [70, 30], coverage: 90, border: 'off' },
+];
+const out = path.join(__dirname, 'out');
+fs.mkdirSync(out, { recursive: true });
+const fails = [];
+CASES.forEach((c, i) => {
+  const t0 = Date.now(), { groups, report: r } = Engine.generate({ seed: 1000 + i, colors: COLORS.slice(0, c.percents.length + 1), ...c });
+  const name = `case${i + 1}_${c.sizeMm}mm_${c.percents.length}c_${c.coverage}_${c.border}`;
+  fs.writeFileSync(path.join(out, name + '.json'), JSON.stringify({ size: c.sizeMm, colors: COLORS.slice(0, c.percents.length + 1), groups, report: r }));
+  console.log(name.padEnd(28), `${Date.now() - t0}ms`, r.mode.padEnd(6),
+    'cov', r.coverage.achieved.toFixed(1), 'shares', r.shares.map(s => s.achieved.toFixed(1)).join('/'),
+    'thin', r.thinFeatures.toFixed(2), 'chan', r.thinChannels.toFixed(2), 'sym', r.symmetry.toFixed(2), 'ovl', r.overlap.toFixed(3),
+    r.warnings.length ? 'WARN ' + r.warnings : '');
+  if (r.warnings.length) fails.push(name);
+});
+assert(!fails.length, 'engine cases off target: ' + fails.join(', '));
 console.log('selfcheck OK');

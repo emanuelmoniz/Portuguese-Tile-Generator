@@ -41,10 +41,16 @@ function offset(paths, deltaMm) {
 }
 
 // Area of `paths` that a disk of diameter widthMm cannot reach (morphological opening).
+// Pieces under DUST_MM2 are polygon-approximation noise along curves, below print resolution: ignored.
+var DUST_MM2 = 0.02;
 function thinerThan(paths, widthMm) {
   if (!paths.length) return 0;
-  var opened = offset(offset(paths, -widthMm / 2), widthMm / 2);
-  return Math.max(0, area(paths) - area(opened));
+  var opened = offset(offset(paths, -widthMm / 2), widthMm / 2), a = 0;
+  exec(CL.ClipType.ctDifference, paths, opened).forEach(function (p) {
+    var pa = CL.Clipper.Area(p) / (SC * SC);
+    if (Math.abs(pa) >= DUST_MM2) a += pa;
+  });
+  return Math.max(0, a);
 }
 
 function transformed(paths, size, f) {
@@ -108,4 +114,7 @@ function svgString(groups, colors, sizeMm) {
   return out.join('\n');
 }
 
-if (typeof module !== 'undefined') module.exports = { unionOf: unionOf, area: area, analyze: analyze, svgString: svgString, MIN_FEATURE_MM: MIN_FEATURE_MM, MIN_CHANNEL_MM: MIN_CHANNEL_MM };
+if (typeof module !== 'undefined') module.exports = {
+  SC: SC, toPaths: toPaths, exec: exec, offset: offset, unionOf: unionOf, area: area, analyze: analyze, svgString: svgString,
+  MIN_FEATURE_MM: MIN_FEATURE_MM, MIN_CHANNEL_MM: MIN_CHANNEL_MM
+};
