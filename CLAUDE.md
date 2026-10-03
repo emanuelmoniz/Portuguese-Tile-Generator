@@ -54,12 +54,12 @@ and turns them into a multi-color 3MF for 3D printing.
 2. A confirm dialog may appear when switching between Update and Generate
 3. Preview (PNG drawn on canvas) + report (coverage, shares, warnings)
 4. Save SVG / PNG, or export the design (JSON)
-5. 3D settings dialog → Generate 3MF (emboss/inlay) → back to the main view
+5. "Generate 3D" button → 3D settings dialog → Generate 3MF (emboss/inlay) → main view switches to the 3D viewer
 6. Save 3MF, or save bundle (.zip with SVG + PNG + 3MF)
 7. Import an export (paste or upload JSON) to regenerate a previous design
 8. Clear all and start fresh
 
-Save buttons stay disabled until their file exists. No 3D preview (2D only, for now).
+Save buttons stay disabled until their file exists. 3D viewer: three.js r147 (vendored), shows the generated 3MF meshes, orbit/zoom, 2D/3D toggle on the preview.
 
 ### Rebuild css
 After adding Tailwind classes: `tools\tailwindcss.exe -i css/input.css -o css/app.css --minify`

@@ -17,6 +17,7 @@
   function setTheme(dark) {
     root.classList.toggle('dark', dark);
     set('theme', dark ? 'dark' : 'light');
+    Viewer.setTheme(dark);
   }
   function setLang(lang) {
     var d = I18N[lang];
@@ -146,19 +147,32 @@
     el.textContent = tile ? t('info3d', s3d.emboss, s3d.plate) + (tile.mf ? ' · ' + t('info3dReady', tile.mf.parts.length, tile.mf.tris) : '') : '';
   }
 
+  // 2D canvas, 3D viewer or the empty hint; 3D only while a 3MF exists
+  function view(m) {
+    var has = !!tile, can = has && !!tile.mf, is3 = m === '3d' && can;
+    $('preview').classList.toggle('hidden', !has || is3);
+    $('view3d').classList.toggle('hidden', !is3);
+    $('resetView').classList.toggle('hidden', !is3);
+    $('previewEmpty').classList.toggle('hidden', has);
+    $('tab3d').disabled = !can;
+    $('tab2d').classList.toggle('bg-blue-600', !is3); $('tab2d').classList.toggle('text-white', !is3);
+    $('tab3d').classList.toggle('bg-blue-600', is3); $('tab3d').classList.toggle('text-white', is3);
+    if (is3) Viewer.resize();
+  }
+
   function setButtons() {
     var on = !!tile;
+    if (!(on && tile.mf)) Viewer.dispose(); // the 3MF is gone: free the viewer
     ['saveSvg', 'savePng', 'open3d', 'clear', 'exportJson', 'copyJson'].forEach(function (id) { $(id).disabled = !on; });
     ['save3mf', 'saveBundle'].forEach(function (id) { $(id).disabled = !(on && tile.mf); });
     render3d();
+    view('2d');
     validate();
   }
 
   function show() {
     $('seed').textContent = tile.report.seed;
     draw($('preview'), tile.groups, tile.colors, tile.report.sizeMm);
-    $('preview').classList.remove('hidden');
-    $('previewEmpty').classList.add('hidden');
     renderReport();
     setButtons();
   }
@@ -222,8 +236,6 @@
     $('form3d').reset();
     s3d = { emboss: 1, plate: 3 };
     $('seed').textContent = '-';
-    $('preview').classList.add('hidden');
-    $('previewEmpty').classList.remove('hidden');
     syncRows();
     renderReport();
     setButtons();
@@ -258,10 +270,13 @@
       tile.mf = null;
       $('info3d').textContent = t('wfail3d', e.message);
       $('dlg3d').close();
+      setButtons();
       return;
     }
     $('dlg3d').close();
     setButtons();
+    view('3d');
+    Viewer.show($('view3d'), tile.mf.parts, tile.colors, tile.report.sizeMm);
   }
 
   // ---- save ----
@@ -349,6 +364,9 @@
   $('savePng').onclick = function () { $('preview').toBlob(function (b) { save(b, 'png'); }, 'image/png'); };
   ['emboss', 'plate'].forEach(function (id) { $(id).addEventListener('input', validate3d); });
   $('open3d').onclick = open3d;
+  $('tab2d').onclick = function () { view('2d'); };
+  $('tab3d').onclick = function () { view('3d'); };
+  $('resetView').onclick = Viewer.reset;
   $('form3d').onsubmit = gen3mf;
   $('cancel3d').onclick = function () { $('dlg3d').close(); };
   $('save3mf').onclick = function () { save(new Blob([tile.mf.bytes], { type: 'model/3mf' }), '3mf'); };
@@ -372,5 +390,5 @@
   // Footer initialization
   var d = new Date();
   $('footerDate').textContent = d.getFullYear();
-  $('footerVersion').textContent = 'v2.1.1';
+  $('footerVersion').textContent = 'v2.2.0';
 })();

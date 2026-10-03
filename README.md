@@ -135,7 +135,7 @@ The standalone CLI is included in `tools/` (Windows 64-bit). For other platforms
 - **js/mesh3mf.js**: 3D extrusion and 3MF writer (Bambu/Orca metadata).
 - **js/app.js**: UI state, form validation, preview, and file I/O.
 - **js/i18n.js**: English and Portuguese strings.
-- **vendor/**: Clipper (polygon boolean), earcut (triangulation), fflate (ZIP).
+- **vendor/**: Clipper (polygon boolean), earcut (triangulation), fflate (ZIP), three.js r147 + OrbitControls (3D viewer, MIT).
 - **css/app.css**: Tailwind-compiled styles (prebuilt, no build step needed).
 
 ## Languages
