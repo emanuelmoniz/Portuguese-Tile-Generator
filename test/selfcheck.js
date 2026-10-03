@@ -134,6 +134,30 @@ RESULTS.forEach(({ name, groups, r }) => {
   });
 }
 
+// ---- export/import: deterministic round trip ----
+{
+  const Exp = require('../js/export.js'), P = { sizeMm: 60, colors: COLORS, percents: [34, 33, 33], coverage: 55, border: 'on', frameColor: 2 };
+  const gen = () => Engine.generate({ seed: 4242, ...P });
+  assert.strictEqual(JSON.stringify(gen().groups), JSON.stringify(gen().groups), 'same seed + params -> identical polygons');
+  // exported after Update tile: size 90 and new colors, generated at 60
+  const newColors = ['#000000', '#111111', '#222222', '#333333'], g0 = gen();
+  const text = JSON.stringify(Exp.build({ seed: 4242, generatedSizeMm: 60, sizeMm: 90, colors: newColors, percents: P.percents, coverage: P.coverage, border: P.border, frameColor: 2 }));
+  const r = Exp.parse(text), d = r.data;
+  assert(d && !r.warnings.length, JSON.stringify(r));
+  assert.deepStrictEqual([d.shapeParams.numColors, d.shapeParams.percents, d.shapeParams.coverage, d.shapeParams.border, d.shapeParams.frameColor], [4, P.percents, 55, 'on', 2]);
+  const g1 = Engine.generate({ seed: d.seed, sizeMm: d.generatedSizeMm, colors: d.colors, percents: d.shapeParams.percents, coverage: d.shapeParams.coverage, border: d.shapeParams.border, frameColor: d.shapeParams.frameColor });
+  assert.strictEqual(check.svgString(g1.groups, COLORS, 60), check.svgString(g0.groups, COLORS, 60), 'round trip SVG identical');
+  const up = Engine.rescale(g1, d.sizeMm);
+  assert.strictEqual(up.report.sizeMm, 90);
+  assert.strictEqual(d.colors[1], '#111111');
+  // validation
+  const bad = (f) => Exp.parse(JSON.stringify(f(JSON.parse(text)))).errors.length > 0;
+  assert(Exp.parse('{').errors.length && bad(o => ({ ...o, extra: 1 })) && bad(o => ({ ...o, version: '2.0.0' })) && bad(o => ({ ...o, format: 'x' })));
+  assert(bad(o => ({ ...o, sizeMm: 5 })) && bad(o => ({ ...o, colors: ['#fff'] })) && bad(o => { o.shapeParams.percents = [50, 40, 5]; return o; }));
+  assert(bad(o => { o.shapeParams.coverage = 95; return o; }) && bad(o => { o.shapeParams.border = 'x'; return o; }) && bad(o => { o.shapeParams.frameColor = 4; return o; }));
+  assert.strictEqual(Exp.parse(JSON.stringify({ ...JSON.parse(text), engineVersion: '0.9' })).warnings.length, 1);
+}
+
 // ---- 3D: every mesh watertight (each directed edge once, reverse once), positive volume, volume matches analytics ----
 const Mesh = require('../js/mesh3mf.js'), fflate = require('../vendor/fflate.min.js');
 function check3d(label, groups, colors, size, opts, coverage) {

@@ -31,7 +31,11 @@ var I18N = {
     wcoverage: 'Coverage is outside the ±5% tolerance.', wshares: 'A color share is outside the ±5% tolerance.',
     wchannels: 'Some base-color channels are narrower than 1.5 mm.', wfeatures: 'Some raised features are thinner than 1.0 mm.',
     wsymmetry: 'The design is not perfectly symmetric.', woverlap: 'Raised colors overlap.',
-    wfail: 'Generation failed: {0}'
+    wfail: 'Generation failed: {0}',
+    exportJson: 'Export design', copyJson: 'Copy code', importTitle: 'Generate from export', importPaste: 'Paste exported JSON',
+    importFile: 'Or choose file', importBtn: 'Import', importOk: 'Design imported.', copied: 'Copied to clipboard.',
+    errJson: 'Not valid JSON.', errKeys: 'Unexpected or missing keys.', errFormat: 'Unknown format.', errVersion: 'Unsupported version: {0}.',
+    errField: 'Invalid value: {0}.', warnEngine: 'Exported with engine {0}, this is {1}: the design may differ.', warnBig: 'The text is larger than 10 kB.'
   },
   pt: {
     title: 'Gerador de Azulejos Portugueses',
@@ -65,7 +69,11 @@ var I18N = {
     wcoverage: 'A cobertura está fora da tolerância de ±5%.', wshares: 'A parte de uma cor está fora da tolerância de ±5%.',
     wchannels: 'Alguns canais da cor base são mais estreitos que 1,5 mm.', wfeatures: 'Alguns elementos em relevo são mais finos que 1,0 mm.',
     wsymmetry: 'O desenho não é perfeitamente simétrico.', woverlap: 'As cores em relevo sobrepõem-se.',
-    wfail: 'Falha ao gerar: {0}'
+    wfail: 'Falha ao gerar: {0}',
+    exportJson: 'Exportar design', copyJson: 'Copiar código', importTitle: 'Gerar a partir de exportação', importPaste: 'Cole o JSON exportado',
+    importFile: 'Ou escolha um ficheiro', importBtn: 'Importar', importOk: 'Design importado.', copied: 'Copiado para a área de transferência.',
+    errJson: 'JSON inválido.', errKeys: 'Chaves inesperadas ou em falta.', errFormat: 'Formato desconhecido.', errVersion: 'Versão não suportada: {0}.',
+    errField: 'Valor inválido: {0}.', warnEngine: 'Exportado com o motor {0}, este é {1}: o design pode diferir.', warnBig: 'O texto tem mais de 10 kB.'
   }
 };
 if (typeof module !== 'undefined') module.exports = I18N;

@@ -144,7 +144,7 @@
 
   function setButtons() {
     var on = !!tile;
-    ['saveSvg', 'savePng', 'open3d', 'clear'].forEach(function (id) { $(id).disabled = !on; });
+    ['saveSvg', 'savePng', 'open3d', 'clear', 'exportJson', 'copyJson'].forEach(function (id) { $(id).disabled = !on; });
     ['save3mf', 'saveBundle'].forEach(function (id) { $(id).disabled = !(on && tile.mf); });
     render3d();
     validate();
@@ -165,7 +165,7 @@
     if (!p || !lastGenerated) return;
     var res = Engine.rescale({ groups: tile.groups, report: tile.report }, p.sizeMm);
     if (tile.report.border && lastGenerated.frameColor !== p.frameColor) res = Engine.reframe(res, p.frameColor);
-    tile = { groups: res.groups, report: res.report, colors: p.colors, svg: svgString(res.groups, p.colors, p.sizeMm) };
+    tile = { groups: res.groups, report: res.report, colors: p.colors, svg: svgString(res.groups, p.colors, p.sizeMm), gen: tile.gen };
     lastGenerated = p;
     show();
   }
@@ -186,12 +186,13 @@
     $('dlgUpdate').showModal();
   }
 
-  function generate() {
+  function generate(seed) { // seed: only when re-creating an imported design
     var p = validate();
     if (!p) return;
     try {
-      var res = Engine.generate({ sizeMm: p.sizeMm, colors: p.colors, percents: p.percents, coverage: p.coverage, border: p.border, frameColor: p.border === 'off' || p.frameColor === 'auto' ? 'auto' : p.frameColor });
-      tile = { groups: res.groups, report: res.report, colors: p.colors, svg: svgString(res.groups, p.colors, p.sizeMm) };
+      var fc = p.border === 'off' || p.frameColor === 'auto' ? 'auto' : p.frameColor;
+      var res = Engine.generate({ seed: seed, sizeMm: p.sizeMm, colors: p.colors, percents: p.percents, coverage: p.coverage, border: p.border, frameColor: fc });
+      tile = { groups: res.groups, report: res.report, colors: p.colors, svg: svgString(res.groups, p.colors, p.sizeMm), gen: { sizeMm: p.sizeMm, frameColor: fc } };
     } catch (e) {
       tile = lastGenerated = null;
       $('report').textContent = t('wfail', e.message);
@@ -285,6 +286,47 @@
   $('generate').onclick = generateClicked;
   $('update').onclick = updateTile;
   $('dlgNew').onclick = function () { $('dlgUpdate').close(); generate(); };
+  // ---- export / import ----
+  function exportText() {
+    return JSON.stringify(Export.build({ seed: tile.report.seed, generatedSizeMm: tile.gen.sizeMm, sizeMm: tile.report.sizeMm, colors: tile.colors,
+      percents: lastGenerated.percents, coverage: lastGenerated.coverage, border: lastGenerated.border, frameColor: tile.gen.frameColor }), null, 2);
+  }
+  function importMsg(errs, warns, ok) {
+    var el = $('importMsg');
+    el.innerHTML = '';
+    function add(cls, e) { var p = document.createElement('p'); p.className = cls; p.textContent = t.apply(null, e); el.appendChild(p); }
+    errs.forEach(function (e) { add('text-red-600 dark:text-red-400', e); });
+    warns.forEach(function (e) { add('text-amber-600 dark:text-amber-400', e); });
+    if (ok) add('text-green-700 dark:text-green-400', ['importOk']);
+  }
+  function importDesign(text) {
+    var r = Export.parse(text);
+    if (!r.data) return importMsg(r.errors, r.warnings);
+    var d = r.data, sp = d.shapeParams;
+    $('numColors').value = sp.numColors;
+    syncRows();
+    sp.percents.forEach(function (v, i) { $('pct' + (i + 1)).value = v; });
+    d.colors.forEach(function (c, i) { $('color' + i).value = c; });
+    $('coverage').value = sp.coverage;
+    $('border').value = sp.border;
+    $('frameColor').value = String(sp.frameColor);
+    syncFrame();
+    $('size').value = d.generatedSizeMm; // regenerate at the size the engine ran at, then restyle
+    generate(d.seed);
+    if (!tile) return importMsg([['errField', 'design']], r.warnings);
+    $('size').value = d.sizeMm;
+    updateTile();
+    importMsg([], r.warnings, true);
+  }
+  $('exportJson').onclick = function () { save(new Blob([exportText()], { type: 'application/json' }), 'json'); };
+  $('copyJson').onclick = function () {
+    navigator.clipboard.writeText(exportText()).then(function () { importMsg([], [], false); var p = document.createElement('p'); p.textContent = t('copied'); $('importMsg').appendChild(p); });
+  };
+  $('importBtn').onclick = function () { importDesign($('importText').value); };
+  $('importFile').onchange = function () {
+    var f = this.files[0];
+    if (f) f.text().then(function (s) { $('importText').value = s; importDesign(s); });
+  };
   $('dlgOnly').onclick = function () { $('dlgUpdate').close(); updateTile(); };
   $('dlgCancel').onclick = function () { $('dlgUpdate').close(); };
   $('clear').onclick = clearAll;
@@ -314,6 +356,6 @@
 
   // Footer initialization
   var d = new Date();
-  $('footerDate').textContent = d.getFullYear();
-  $('footerVersion').textContent = 'v1.3.0';
+  $('footerDate').textContent = '2026-10-03';
+  $('footerVersion').textContent = 'v1.4.0';
 })();

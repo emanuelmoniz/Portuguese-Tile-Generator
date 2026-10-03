@@ -72,7 +72,7 @@ Format: [Semantic Versioning](https://semver.org/) — v[major].[minor].[patch].
 
 ---
 
-## [1.4.0] – *Planned* (Phase P6d – Export/Import)
+## [1.4.0] – 2026-10-03 (Phase P6d – Export/Import)
 
 **Share and restore tile designs via JSON.**
 
