@@ -32,6 +32,11 @@ and turns them into a multi-color 3MF for 3D printing.
 - Color % = share of the raised area per raised color, must sum to 100 (1 raised color = 100).
 - Coverage 30-90% (raised area / tile area). Tolerance ±5% for coverage and for each share.
 - Border frame: on / off / random.
+- Complexity 1-4 or Auto (user option, default 2): which and how many motifs the layout uses. Auto takes it
+  from the tile size (< 30 mm: 1, < 70: 2, < 140: 3, else 4); exports made before v2.1.1 import as Auto.
+- Ground modes are tried first from 50% coverage (and when the motifs alone cannot reach it).
+- Shape-size limits: every printed island of a raised color is 0.05%-35% of the tile area (base, frame band
+  and ground fill exempt).
 - Seed is shown, plus a "Regenerate" button (new seed, same params). No style picker.
 - Min raised feature 1.0 mm, min base-color channel 1.5 mm, in absolute mm, so small tiles get
   fewer and bigger motifs. If targets can't be met, show achieved vs target + a warning, never fail silently.

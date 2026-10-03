@@ -70,7 +70,7 @@ const out = path.join(__dirname, 'out');
 fs.mkdirSync(out, { recursive: true });
 const fails = [], RESULTS = [];
 CASES.forEach((c, i) => {
-  const t0 = Date.now(), { groups, report: r } = Engine.generate({ seed: 1000 + i, colors: COLORS.slice(0, c.percents.length + 1), ...c });
+  const t0 = Date.now(), { groups, report: r } = Engine.generate({ seed: 1000 + i, colors: COLORS.slice(0, c.percents.length + 1), complexity: 'auto', ...c });
   const name = `case${i + 1}_${c.sizeMm}mm_${c.percents.length}c_${c.coverage}_${c.border}`;
   RESULTS.push({ name, c, colors: COLORS.slice(0, c.percents.length + 1), groups, r });
   fs.writeFileSync(path.join(out, name + '.json'), JSON.stringify({ size: c.sizeMm, colors: COLORS.slice(0, c.percents.length + 1), groups, report: r }));
@@ -136,16 +136,16 @@ RESULTS.forEach(({ name, groups, r }) => {
 
 // ---- export/import: deterministic round trip ----
 {
-  const Exp = require('../js/export.js'), P = { sizeMm: 60, colors: COLORS, percents: [34, 33, 33], coverage: 55, border: 'on', frameColor: 2 };
+  const Exp = require('../js/export.js'), P = { sizeMm: 60, colors: COLORS, percents: [34, 33, 33], coverage: 55, border: 'on', frameColor: 2, complexity: 3 };
   const gen = () => Engine.generate({ seed: 4242, ...P });
   assert.strictEqual(JSON.stringify(gen().groups), JSON.stringify(gen().groups), 'same seed + params -> identical polygons');
   // exported after Update tile: size 90 and new colors, generated at 60
   const newColors = ['#000000', '#111111', '#222222', '#333333'], g0 = gen();
-  const text = JSON.stringify(Exp.build({ seed: 4242, generatedSizeMm: 60, sizeMm: 90, colors: newColors, percents: P.percents, coverage: P.coverage, border: P.border, frameColor: 2 }));
+  const text = JSON.stringify(Exp.build({ seed: 4242, generatedSizeMm: 60, sizeMm: 90, colors: newColors, percents: P.percents, coverage: P.coverage, border: P.border, frameColor: 2, complexity: P.complexity }));
   const r = Exp.parse(text), d = r.data;
   assert(d && !r.warnings.length, JSON.stringify(r));
-  assert.deepStrictEqual([d.shapeParams.numColors, d.shapeParams.percents, d.shapeParams.coverage, d.shapeParams.border, d.shapeParams.frameColor], [4, P.percents, 55, 'on', 2]);
-  const g1 = Engine.generate({ seed: d.seed, sizeMm: d.generatedSizeMm, colors: d.colors, percents: d.shapeParams.percents, coverage: d.shapeParams.coverage, border: d.shapeParams.border, frameColor: d.shapeParams.frameColor });
+  assert.deepStrictEqual([d.shapeParams.numColors, d.shapeParams.percents, d.shapeParams.coverage, d.shapeParams.border, d.shapeParams.frameColor, d.shapeParams.complexity], [4, P.percents, 55, 'on', 2, 3]);
+  const g1 = Engine.generate({ seed: d.seed, sizeMm: d.generatedSizeMm, colors: d.colors, percents: d.shapeParams.percents, coverage: d.shapeParams.coverage, border: d.shapeParams.border, frameColor: d.shapeParams.frameColor, complexity: d.shapeParams.complexity });
   assert.strictEqual(check.svgString(g1.groups, COLORS, 60), check.svgString(g0.groups, COLORS, 60), 'round trip SVG identical');
   const up = Engine.rescale(g1, d.sizeMm);
   assert.strictEqual(up.report.sizeMm, 90);
@@ -156,6 +156,19 @@ RESULTS.forEach(({ name, groups, r }) => {
   assert(bad(o => ({ ...o, sizeMm: 5 })) && bad(o => ({ ...o, colors: ['#fff'] })) && bad(o => { o.shapeParams.percents = [50, 40, 5]; return o; }));
   assert(bad(o => { o.shapeParams.coverage = 95; return o; }) && bad(o => { o.shapeParams.border = 'x'; return o; }) && bad(o => { o.shapeParams.frameColor = 4; return o; }));
   assert.strictEqual(Exp.parse(JSON.stringify({ ...JSON.parse(text), engineVersion: '0.9' })).warnings.length, 1);
+  // complexity: 1-4 or 'auto' (from the size); exports from before v2.1.1 have none: 'auto', as the engine did then
+  assert(bad(o => { o.shapeParams.complexity = 5; return o; }) && bad(o => { o.shapeParams.complexity = 2.5; return o; }) && bad(o => { o.shapeParams.complexity = 'x'; return o; }));
+  assert.strictEqual(Exp.parse(JSON.stringify({ ...JSON.parse(text), shapeParams: { ...JSON.parse(text).shapeParams, complexity: 'auto' } })).data.shapeParams.complexity, 'auto');
+  const old = JSON.parse(text); delete old.shapeParams.complexity;
+  assert.strictEqual(Exp.parse(JSON.stringify(old)).data.shapeParams.complexity, 'auto', 'old export -> auto');
+  assert.deepStrictEqual([15, 29, 30, 69, 70, 139, 140, 200].map(Engine.autoComplexity), [1, 1, 2, 2, 3, 3, 4, 4], 'auto levels by size');
+  const auto = Engine.generate({ seed: 4242, ...P, sizeMm: 100, complexity: 'auto' });
+  assert(JSON.stringify(auto.groups) === JSON.stringify(Engine.generate({ seed: 4242, ...P, sizeMm: 100, complexity: 3 }).groups), 'auto at 100 mm = level 3');
+  assert(auto.report.complexity === 3 && auto.report.complexityAuto && Engine.rescale(auto, 150).report.complexityAuto, 'report keeps auto');
+  const last = { sizeMm: 60, colors: COLORS, percents: [34, 33, 33], coverage: 60, border: 'on', frameColor: 'auto', complexity: 2 };
+  assert(!Engine.isStyleOnly(Engine.changedParams(last, { ...last, complexity: 3 })), 'complexity needs Generate');
+  const cx = c => JSON.stringify(Engine.generate({ seed: 4242, ...P, complexity: c }).groups);
+  assert(cx(1) !== cx(4), 'complexity changes the layout');
 }
 
 // ---- P6e: 10 extra cases (3 frame color, 4 update tile, 3 export/import) ----
@@ -164,7 +177,7 @@ RESULTS.forEach(({ name, groups, r }) => {
   const near = (a, b, m) => assert(Math.abs(a - b) <= 5, m + ' ' + a + ' vs ' + b);
   // frame color 1/2/3, 3 colors, border on: coverage and shares within +-5
   [1, 2, 3].forEach(fc => {
-    const pc = [40, 35, 25], { report: r } = Engine.generate({ seed: 31 + fc, sizeMm: 80, colors: COLORS, percents: pc, coverage: 60, border: 'on', frameColor: fc });
+    const pc = [40, 35, 25], { report: r } = Engine.generate({ seed: 31 + fc, sizeMm: 80, colors: COLORS, percents: pc, coverage: 60, border: 'on', frameColor: fc, complexity: 3 });
     near(r.coverage.achieved, 60, 'frame ' + fc + ' coverage');
     r.shares.forEach((s, i) => near(s.achieved, pc[i], 'frame ' + fc + ' share ' + i));
     assert(r.symmetry >= 0.99 || !r.warnings.includes('symmetry'), 'frame ' + fc + ' symmetry');
@@ -179,7 +192,7 @@ RESULTS.forEach(({ name, groups, r }) => {
   // export/import round trip across sizes, color counts, frameColor
   [{ sizeMm: 15, n: 2, fc: 'auto', border: 'off' }, { sizeMm: 100, n: 3, fc: 2, border: 'on' }, { sizeMm: 200, n: 4, fc: 1, border: 'on' }].forEach(({ sizeMm, n, fc, border }, k) => {
     const cols = COLORS.slice(0, n), pc = [[100], [50, 50], [50, 30, 20]][n - 2], coverage = 50 + k * 10;
-    const P = { seed: 900 + k, sizeMm, colors: cols, percents: pc, coverage, border, frameColor: fc }, g0 = Engine.generate(P);
+    const P = { seed: 900 + k, sizeMm, colors: cols, percents: pc, coverage, border, frameColor: fc, complexity: [1, 3, 4][k] }, g0 = Engine.generate(P);
     const r = Exp.parse(JSON.stringify(Exp.build({ ...P, generatedSizeMm: sizeMm })));
     assert(r.data && !r.errors.length && !r.warnings.length, 'import ' + JSON.stringify(r));
     const d = r.data, g1 = Engine.generate({ seed: d.seed, sizeMm: d.generatedSizeMm, colors: d.colors, ...d.shapeParams });
@@ -199,6 +212,12 @@ RESULTS.forEach(({ name, groups, r }) => {
   console.log('shapes', String(S).padStart(3) + 'mm', pc.length + 1 + 'c', `${Date.now() - t0}ms`, r.mode.padEnd(6), r.shapes.count, 'islands',
     r.shapes.smallestPct.toFixed(2) + '-' + r.shapes.largestPct.toFixed(1) + '%', r.warnings.length ? 'WARN ' + r.warnings : '');
 }));
+
+// clipper's union lost a hole when dust slivers touched it: a raised color filled it, over another color (v2.1.0)
+{
+  const r = Engine.generate({ seed: 231, sizeMm: 200, colors: COLORS, percents: [40, 35, 25], coverage: 60, border: 'random', complexity: 4 }).report;
+  assert(!r.warnings.includes('overlap'), 'colors overlap: ' + r.overlap);
+}
 
 // ---- 3D: every mesh watertight (each directed edge once, reverse once), positive volume, volume matches analytics ----
 const Mesh = require('../js/mesh3mf.js'), fflate = require('../vendor/fflate.min.js');
@@ -231,7 +250,7 @@ RESULTS.forEach(({ name, c, colors, groups, r }) => {
   });
 });
 // designs whose rings come within a micron of themselves (pinch / spike): failed "not watertight" before v2.1.0
-[{ seed: 1003, sizeMm: 50, minShapePct: 0, maxShapePct: 100 }, { seed: 1007, sizeMm: 100 }].forEach(o => {
+[{ seed: 1003, sizeMm: 50, minShapePct: 0, maxShapePct: 100 }, { seed: 1007, sizeMm: 100, complexity: 3 }].forEach(o => {
   const g = Engine.generate({ colors: COLORS, percents: [40, 35, 25], coverage: 60, border: 'on', ...o });
   [1.5, 0].forEach(emboss => check3d('pinch ' + o.sizeMm + 'mm seed ' + o.seed + ' emboss ' + emboss, g.groups, COLORS, o.sizeMm, { emboss, plate: 3 }, g.report.coverage.achieved));
 });

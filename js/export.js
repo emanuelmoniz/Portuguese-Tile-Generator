@@ -3,15 +3,15 @@
 var Export = (function () {
   var FORMAT = 'portuguese-tile-v1', VERSION = '1.0.0', MAX_BYTES = 10240;
   var TOP = ['format', 'version', 'engineVersion', 'seed', 'generatedSizeMm', 'sizeMm', 'colors', 'shapeParams'];
-  var SHAPE = ['numColors', 'percents', 'coverage', 'border', 'frameColor'];
+  var SHAPE = ['numColors', 'percents', 'coverage', 'border', 'frameColor', 'complexity'];
   var engineVersion = typeof Engine !== 'undefined' ? Engine.version : require('./engine.js').version;
 
-  // s = { seed, generatedSizeMm, sizeMm, colors, percents, coverage, border, frameColor }
+  // s = { seed, generatedSizeMm, sizeMm, colors, percents, coverage, border, frameColor, complexity }
   function build(s) {
     return {
       format: FORMAT, version: VERSION, engineVersion: engineVersion, seed: s.seed,
       generatedSizeMm: s.generatedSizeMm, sizeMm: s.sizeMm, colors: s.colors,
-      shapeParams: { numColors: s.colors.length, percents: s.percents, coverage: s.coverage, border: s.border, frameColor: s.frameColor }
+      shapeParams: { numColors: s.colors.length, percents: s.percents, coverage: s.coverage, border: s.border, frameColor: s.frameColor, complexity: s.complexity }
     };
   }
 
@@ -24,7 +24,7 @@ var Export = (function () {
     var errors = [], warnings = [], d;
     if (text.length > MAX_BYTES) warnings.push(['warnBig']);
     try { d = JSON.parse(text); } catch (e) { return { errors: [['errJson']], warnings: warnings }; }
-    if (!sameKeys(d, TOP) || !sameKeys(d.shapeParams, SHAPE)) return { errors: [['errKeys']], warnings: warnings };
+    if (!sameKeys(d, TOP) || !(sameKeys(d.shapeParams, SHAPE) || sameKeys(d.shapeParams, SHAPE.slice(0, -1)))) return { errors: [['errKeys']], warnings: warnings };
     if (d.format !== FORMAT) return { errors: [['errFormat']], warnings: warnings };
     if (d.version !== VERSION) return { errors: [['errVersion', String(d.version)]], warnings: warnings };
     if (d.engineVersion !== engineVersion) warnings.push(['warnEngine', String(d.engineVersion), engineVersion]);
@@ -41,6 +41,8 @@ var Export = (function () {
     }
     if (!num(p.coverage, 30, 90)) bad('coverage');
     if (['on', 'off', 'random'].indexOf(p.border) < 0) bad('border');
+    if (!('complexity' in p)) p.complexity = 'auto'; // exports before v2.1.1: the engine took it from the size, as 'auto' does
+    if (!(p.complexity === 'auto' || (Number.isInteger(p.complexity) && p.complexity >= 1 && p.complexity <= 4))) bad('complexity');
     return { data: errors.length ? null : d, errors: errors, warnings: warnings };
   }
 

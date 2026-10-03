@@ -1,5 +1,6 @@
 // Design engine (plan.md section 2): seeded padrao layout -> color assignment -> tuning loop.
-// generate({seed, sizeMm, colors, percents, coverage, border, frameColor, minShapePct, maxShapePct}) -> {groups, fill, report}
+// generate({seed, sizeMm, colors, percents, coverage, border, frameColor, complexity, minShapePct, maxShapePct}) -> {groups, fill, report}
+//   complexity = 1-4 or 'auto' (from the size): how many and which motifs the layout uses (1 = few bold shapes, 4 = dense padrao).
 //   fill = the ground fill (same format as a group), exempt from the shape-size limits like the base and the frame band.
 //   percents = share of the raised area per raised color (sum 100), coverage = raised / tile area in %,
 //   border = 'on' | 'off' | 'random' (decided by the seed).
@@ -14,6 +15,7 @@ var Engine = (function () {
       M = node ? require('./motifs.js') : window.Motifs, CL = node ? require('../vendor/clipper.js') : window.ClipperLib;
   var SC = CK.SC, CHANNEL = 1.7, FEATURE = 1.1, TOL = 5, FMIN = 0.55, GROW = 1.12, R4 = [0, 1, 2, 3], DEG = Math.PI / 180;
   var MIN_SHAPE_PCT = 0.05, MAX_SHAPE_PCT = 35; // printed island area limits, % of the tile (base, frame band, ground fill exempt)
+  var COMPLEXITY = 2, GROUND_FIRST = 50; // default complexity; coverage % from which the ground modes are tried first
 
   function mulberry32(a) {
     return function () {
@@ -66,8 +68,11 @@ var Engine = (function () {
     return Math.max.apply(null, CK.split(I(CK.unionOf(shapes), sq)).map(function (i) { return i.area; }).concat(0));
   }
 
-  function makeLayout(rng, S, border, lim) { // lim = {min, max} island area in mm2
-    var h = S / 2, lvl = S < 30 ? 0 : S < 70 ? 1 : S < 140 ? 2 : 3, g = clamp(0.03 * S, CHANNEL, 5);
+  // complexity 'auto': bigger tiles get more motifs (the rule before complexity was a user option)
+  function autoComplexity(S) { return S < 30 ? 1 : S < 70 ? 2 : S < 140 ? 3 : 4; }
+
+  function makeLayout(rng, S, border, lim, lvl) { // lim = {min, max} island area in mm2, lvl = complexity - 1 (0-3)
+    var h = S / 2, g = clamp(0.03 * S, CHANNEL, 5);
     var bw = border ? Math.max(1.2, 0.03 * S) : 0, hi = h - bw * GROW, slots = [];
     function rnd(a, b) { return a + (b - a) * rng(); }
     function pick(a) { return a[Math.floor(rng() * a.length)]; }
@@ -300,7 +305,8 @@ var Engine = (function () {
     function fillThin() {
       var base = D(keep, U(flat(u))), thin = D(base, opening(base, CHANNEL));
       for (var k = 0; k < K && CK.area(thin) > 1e-3; k++) {
-        var t = I(thin, off(u[k], CHANNEL));
+        // without its dust: clipper's union can lose a hole (fill it, over another color) when slivers touch it
+        var t = I(thin, off(u[k], CHANNEL)).filter(function (q) { return Math.abs(CL.Clipper.Area(q)) >= 0.01 * SC * SC; });
         if (t.length) { u[k] = U(u[k].concat(t)); thin = D(thin, t); }
       }
     }
@@ -409,12 +415,13 @@ var Engine = (function () {
     var S = o.sizeMm, p = o.percents, cov = o.coverage, S2 = S * S, T = cov / 100 * S2;
     var border = o.border === 'random' ? rng() < 0.5 : o.border === 'on';
     var minS = o.minShapePct === undefined ? MIN_SHAPE_PCT : o.minShapePct, maxS = o.maxShapePct === undefined ? MAX_SHAPE_PCT : o.maxShapePct;
-    var lay = makeLayout(rng, S, border, { min: minS / 100 * S2, max: maxS / 100 * S2 }), gs = groupsOf(lay), nominal = sum(gs.map(function (x) { return x.area; })) / S2 * 100;
+    var cx = o.complexity === undefined ? COMPLEXITY : o.complexity === 'auto' ? autoComplexity(S) : o.complexity, lvl = clamp(Math.round(cx), 1, 4) - 1;
+    var lay = makeLayout(rng, S, border, { min: minS / 100 * S2, max: maxS / 100 * S2 }, lvl), gs = groupsOf(lay), nominal = sum(gs.map(function (x) { return x.area; })) / S2 * 100;
     var fc = border && o.frameColor !== undefined && o.frameColor !== 'auto' ? parseInt(o.frameColor, 10) - 1 : -1;
     if (!(fc >= 0 && fc < p.length)) fc = -1;
     var pin = null;
     if (fc >= 0) gs.forEach(function (g, i) { if (g.key === lay.frame + 'a') pin = { i: i, k: fc }; });
-    var order = cov > Math.max(45, nominal * GROW * GROW) ? ['ground', 'two', 'white'] : ['white', 'ground', 'two'], best = null;
+    var order = cov >= Math.max(GROUND_FIRST, nominal * GROW * GROW) ?['ground', 'two', 'white'] : ['white', 'ground', 'two'], best = null;
     order.forEach(function (mode) {
       if (best && best.err <= 3.5) return; // a mode hit the targets: skip the rest
       var a = assign(gs, p, T, S2, mode, rng, pin), r = a && tune(lay, a, p, cov);
@@ -428,7 +435,7 @@ var Engine = (function () {
       smallestPct: isl.length ? Math.min.apply(null, isl) : 0, largestPct: isl.length ? Math.max.apply(null, isl) : 0 };
     var fi = lay.frame >= 0 ? best.asg[lay.frame + 'a'] : -1; // color group of the frame (white = none)
     return { groups: groups, fill: toMm(best.r.fill), report: makeReport(groups, S, { seed: seed, border: border, fc: fc, mode: best.mode, coverage: cov, percents: p,
-      shapes: shapes, frameIdx: fi >= 0 && fi < p.length ? fi : -1, frameWidth: Math.max(1.2, Math.max(1.2, 0.03 * S) * Math.min(GROW, best.F[fi])) }) };
+      complexity: lvl + 1, complexityAuto: o.complexity === 'auto', shapes: shapes, frameIdx: fi >= 0 && fi < p.length ? fi : -1, frameWidth: Math.max(1.2, Math.max(1.2, 0.03 * S) * Math.min(GROW, best.F[fi])) }) };
   }
   function toMm(paths) { return paths.length ? [paths.map(function (pa) { return pa.map(function (q) { return [q.X / SC, q.Y / SC]; }); })] : []; }
 
@@ -437,7 +444,7 @@ var Engine = (function () {
     // allowed mm2: channels/symmetry = numeric noise (+ the 4 open tile corners); features also = pointed petal tips
     var an = CK.analyze(groups, S), eps = 1 + 1e-4 * S2, epsTips = 1 + 0.01 * S2;
     var report = {
-      seed: o.seed, sizeMm: S, border: o.border, frameColor: fc < 0 ? 'auto' : fc + 1, mode: o.mode,
+      seed: o.seed, sizeMm: S, border: o.border, frameColor: fc < 0 ? 'auto' : fc + 1, mode: o.mode, complexity: o.complexity, complexityAuto: o.complexityAuto,
       coverage: { target: cov, achieved: an.coverage },
       shares: p.map(function (x, k) { return { target: x, achieved: an.shares[k] }; }),
       thinFeatures: sum(an.thinFeatures), thinChannels: an.thinChannels, overlap: an.overlap, symmetry: an.symmetry.max,
@@ -465,7 +472,7 @@ var Engine = (function () {
   // design must not change); the island % stay as measured: scaling and moving the frame band keep every island.
   function again(r, o) {
     var x = { seed: r.seed, border: r.border, fc: r.frameColor === 'auto' ? -1 : r.frameColor - 1, mode: r.mode, frameIdx: r.frameIdx, frameWidth: r.frameWidth,
-      coverage: r.coverage.target, percents: r.shares.map(function (s) { return s.target; }), shapes: r.shapes };
+      coverage: r.coverage.target, percents: r.shares.map(function (s) { return s.target; }), shapes: r.shapes, complexity: r.complexity, complexityAuto: r.complexityAuto };
     Object.keys(o).forEach(function (k) { x[k] = o[k]; });
     return x;
   }
@@ -494,7 +501,7 @@ var Engine = (function () {
   }
   function isStyleOnly(keys) { return keys.every(function (k) { return STYLE.indexOf(k) >= 0; }); }
 
-  return { version: '2.1.0', generate: generate, rescale: rescale, reframe: reframe, changedParams: changedParams, isStyleOnly: isStyleOnly, mulberry32: mulberry32 };
+  return { version: '2.1.1', generate: generate, rescale: rescale, reframe: reframe, changedParams: changedParams, isStyleOnly: isStyleOnly, autoComplexity: autoComplexity, mulberry32: mulberry32 };
 })();
 
 if (typeof module !== 'undefined') module.exports = Engine;

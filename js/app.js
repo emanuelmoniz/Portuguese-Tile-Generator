@@ -78,6 +78,8 @@
     v = parseFloat($('coverage').value);
     if (!(v >= 30 && v <= 90)) errors.coverage = ['errCoverage'];
     p.coverage = v;
+    v = $('complexity').value;
+    p.complexity = v === 'auto' ? v : parseInt(v, 10);
     var sum = 0, bad = false;
     for (i = 1; i <= k; i++) {
       v = parseFloat($('pct' + i).value);
@@ -128,7 +130,7 @@
     el.classList.toggle('text-slate-500', !tile);
     if (!tile) { el.textContent = t('reportEmpty'); return; }
     var r = tile.report, f = function (x) { return x.toFixed(1); }, h = '';
-    h += '<p>' + t('rSeed') + ': <b class="font-mono">' + r.seed + '</b> · ' + t('rBorder') + ': ' + t(r.border ? 'yes' : 'no') + ' · ' + t('rMode') + ': ' + r.mode + '</p>';
+    h += '<p>' + t('rSeed') + ': <b class="font-mono">' + r.seed + '</b> · ' + t('rBorder') + ': ' + t(r.border ? 'yes' : 'no') + ' · ' + t('rMode') + ': ' + r.mode + ' · ' + t('complexity') + ': ' + r.complexity + (r.complexityAuto ? ' (' + t('cxAutoShort') + ')' : '') + '</p>';
     h += '<p>' + t('rCoverage') + ': <b>' + f(r.coverage.achieved) + '%</b> (' + t('rTarget') + ' ' + r.coverage.target + '%)</p>';
     h += '<p>' + t('rShares') + ': ' + r.shares.map(function (s, i) {
       return '<span class="whitespace-nowrap"><span class="inline-block h-3 w-3 rounded-sm border border-slate-400 align-middle" style="background:' + tile.colors[i + 1] + '"></span> <b>' + f(s.achieved) + '%</b> (' + s.target + '%)</span>';
@@ -202,10 +204,7 @@
     clearImport();
     try {
       var fc = p.border === 'off' || p.frameColor === 'auto' ? 'auto' : p.frameColor;
-      var o = { seed: seed, sizeMm: p.sizeMm, colors: p.colors, percents: p.percents, coverage: p.coverage, border: p.border, frameColor: fc };
-      var dev = { min: parseFloat($('devMin').value), max: parseFloat($('devMax').value) }; // DEV-P7
-      if (!isNaN(dev.min)) o.minShapePct = dev.min; if (!isNaN(dev.max)) o.maxShapePct = dev.max; // DEV-P7
-      var res = Engine.generate(o);
+      var res = Engine.generate({ seed: seed, sizeMm: p.sizeMm, colors: p.colors, percents: p.percents, coverage: p.coverage, border: p.border, frameColor: fc, complexity: p.complexity });
       tile = { groups: res.groups, report: res.report, colors: p.colors, svg: svgString(res.groups, p.colors, p.sizeMm), gen: { sizeMm: p.sizeMm, frameColor: fc } };
     } catch (e) {
       tile = lastGenerated = null;
@@ -278,7 +277,7 @@
   var theme = get('theme');
   setTheme(theme ? theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches);
 
-  document.querySelectorAll('#size, #coverage, #pct1, #pct2, #pct3, #border, #frameColor, [id^=color]').forEach(function (el) {
+  document.querySelectorAll('#size, #coverage, #complexity, #pct1, #pct2, #pct3, #border, #frameColor, [id^=color]').forEach(function (el) {
     el.addEventListener('input', validate);
   });
   $('border').addEventListener('input', syncFrame);
@@ -303,7 +302,7 @@
   // ---- export / import ----
   function exportText() {
     return JSON.stringify(Export.build({ seed: tile.report.seed, generatedSizeMm: tile.gen.sizeMm, sizeMm: tile.report.sizeMm, colors: tile.colors,
-      percents: lastGenerated.percents, coverage: lastGenerated.coverage, border: lastGenerated.border, frameColor: tile.gen.frameColor }), null, 2);
+      percents: lastGenerated.percents, coverage: lastGenerated.coverage, border: lastGenerated.border, frameColor: tile.gen.frameColor, complexity: lastGenerated.complexity }), null, 2);
   }
   function importMsg(errs, warns, ok) {
     var el = $('importMsg');
@@ -322,6 +321,7 @@
     sp.percents.forEach(function (v, i) { $('pct' + (i + 1)).value = v; });
     d.colors.forEach(function (c, i) { $('color' + i).value = c; });
     $('coverage').value = sp.coverage;
+    $('complexity').value = String(sp.complexity);
     $('border').value = sp.border;
     $('frameColor').value = String(sp.frameColor);
     syncFrame();
@@ -372,5 +372,5 @@
   // Footer initialization
   var d = new Date();
   $('footerDate').textContent = d.getFullYear();
-  $('footerVersion').textContent = 'v2.1.0';
+  $('footerVersion').textContent = 'v2.1.1';
 })();
