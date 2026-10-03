@@ -104,6 +104,16 @@ Format: [Semantic Versioning](https://semver.org/) — v[major].[minor].[patch].
 
 ---
 
+## [2.1.0] – 2026-10-03 (Phase P7a – Shape-size limits)
+
+- Every printed island of a raised color is kept between a min and a max % of the tile area (defaults 0.05% / 35%); the base, the frame band and the ground fill are exempt. The report shows the shape count and range, with warnings when a shape still breaks a limit.
+- Temporary dev panel (min / max shape %) to tune the limits.
+- Fix: some designs failed 3MF generation ("mesh not watertight").
+- Engine 2.1.0: designs from older exports may differ.
+- [2026-10-03] P7a: shape-size limits (min/max island %), dev panel. [1debb3e](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/1debb3e)
+
+---
+
 ## Maintenance
 
 **After each commit+push to main:**
