@@ -45,15 +45,14 @@ and turns them into a multi-color 3MF for 3D printing.
 - Every mesh must be watertight (each edge used exactly twice) with positive volume.
 
 ### User flow
-1. Set params → generate
-2. Preview (PNG drawn on canvas) + report (coverage, shares, warnings)
-3. Save SVG
-4. Save PNG
-5. 3D settings dialog →
-6. Generate 3MF → back to the main view
-7. Save 3MF
-8. Save bundle (.zip with SVG + PNG + 3MF)
-9. Clear all and start fresh
+1. Set params (incl. frame color, optional, default "Auto") → Generate (new seed) or Update tile (style params only: size, colors, frame color)
+2. A confirm dialog may appear when switching between Update and Generate
+3. Preview (PNG drawn on canvas) + report (coverage, shares, warnings)
+4. Save SVG / PNG, or export the design (JSON)
+5. 3D settings dialog → Generate 3MF (emboss/inlay) → back to the main view
+6. Save 3MF, or save bundle (.zip with SVG + PNG + 3MF)
+7. Import an export (paste or upload JSON) to regenerate a previous design
+8. Clear all and start fresh
 
 Save buttons stay disabled until their file exists. No 3D preview (2D only, for now).
 

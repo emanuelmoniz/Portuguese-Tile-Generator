@@ -419,7 +419,7 @@ var Engine = (function () {
   }
   function isStyleOnly(keys) { return keys.every(function (k) { return STYLE.indexOf(k) >= 0; }); }
 
-  return { version: '1.0.0', generate: generate, rescale: rescale, reframe: reframe, changedParams: changedParams, isStyleOnly: isStyleOnly, mulberry32: mulberry32 };
+  return { version: '1.5.0', generate: generate, rescale: rescale, reframe: reframe, changedParams: changedParams, isStyleOnly: isStyleOnly, mulberry32: mulberry32 };
 })();
 
 if (typeof module !== 'undefined') module.exports = Engine;

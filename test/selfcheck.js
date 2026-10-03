@@ -158,6 +158,35 @@ RESULTS.forEach(({ name, groups, r }) => {
   assert.strictEqual(Exp.parse(JSON.stringify({ ...JSON.parse(text), engineVersion: '0.9' })).warnings.length, 1);
 }
 
+// ---- P6e: 10 extra cases (3 frame color, 4 update tile, 3 export/import) ----
+{
+  const Exp = require('../js/export.js');
+  const near = (a, b, m) => assert(Math.abs(a - b) <= 5, m + ' ' + a + ' vs ' + b);
+  // frame color 1/2/3, 3 colors, border on: coverage and shares within +-5
+  [1, 2, 3].forEach(fc => {
+    const pc = [40, 35, 25], { report: r } = Engine.generate({ seed: 31 + fc, sizeMm: 80, colors: COLORS, percents: pc, coverage: 60, border: 'on', frameColor: fc });
+    near(r.coverage.achieved, 60, 'frame ' + fc + ' coverage');
+    r.shares.forEach((s, i) => near(s.achieved, pc[i], 'frame ' + fc + ' share ' + i));
+    assert(r.symmetry >= 0.99 || !r.warnings.includes('symmetry'), 'frame ' + fc + ' symmetry');
+  });
+  // update tile: style-only vs shape-param changes, and re-enable
+  const last = { sizeMm: 60, colors: ['#ffffff', '#1d4e9e', '#f2c230'], percents: [60, 40], coverage: 60, border: 'on', frameColor: 'auto' };
+  const style = x => Engine.isStyleOnly(Engine.changedParams(last, { ...last, ...x }));
+  assert(style({ sizeMm: 120, colors: ['#000000', '#1d4e9e', '#f2c230'] }), 'size + colors are style-only');
+  assert(!style({ coverage: 70 }) && !style({ border: 'off' }) && !style({ percents: [50, 50] }), 'shape params need Generate');
+  assert(!style({ coverage: 70, sizeMm: 90 }) && style({ coverage: 70 }) === false, 'mixed change needs Generate');
+  assert(style({ coverage: 60, sizeMm: 90 }), 'reverting a shape param re-enables Update');
+  // export/import round trip across sizes, color counts, frameColor
+  [{ sizeMm: 15, n: 2, fc: 'auto', border: 'off' }, { sizeMm: 100, n: 3, fc: 2, border: 'on' }, { sizeMm: 200, n: 4, fc: 1, border: 'on' }].forEach(({ sizeMm, n, fc, border }, k) => {
+    const cols = COLORS.slice(0, n), pc = [[100], [50, 50], [50, 30, 20]][n - 2], coverage = 50 + k * 10;
+    const P = { seed: 900 + k, sizeMm, colors: cols, percents: pc, coverage, border, frameColor: fc }, g0 = Engine.generate(P);
+    const r = Exp.parse(JSON.stringify(Exp.build({ ...P, generatedSizeMm: sizeMm })));
+    assert(r.data && !r.errors.length && !r.warnings.length, 'import ' + JSON.stringify(r));
+    const d = r.data, g1 = Engine.generate({ seed: d.seed, sizeMm: d.generatedSizeMm, colors: d.colors, ...d.shapeParams });
+    assert.strictEqual(check.svgString(g1.groups, COLORS, sizeMm), check.svgString(g0.groups, COLORS, sizeMm), 'round trip ' + sizeMm + 'mm');
+  });
+}
+
 // ---- 3D: every mesh watertight (each directed edge once, reverse once), positive volume, volume matches analytics ----
 const Mesh = require('../js/mesh3mf.js'), fflate = require('../vendor/fflate.min.js');
 function check3d(label, groups, colors, size, opts, coverage) {

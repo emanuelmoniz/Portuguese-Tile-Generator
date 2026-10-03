@@ -84,13 +84,15 @@ Format: [Semantic Versioning](https://semver.org/) — v[major].[minor].[patch].
 
 ---
 
-## [1.5.0] – *Planned* (Phase P6e – Tests & Finalization)
+## [1.5.0] – 2026-10-03 (Phase P6e – Tests & Finalization)
 
-**Comprehensive testing, documentation, version 1.5.0 release.**
+**P6a–P6e complete. Next: v2.0.0 after stabilization.**
 
-- Extended test suite: 8+ new cases (frame color, update tile, export/import).
-- Updated docs: CLAUDE.md user flow, CHANGELOG maintenance notes.
-- Version bump: ready for major v2.0.0 after all P6 phases.
+- Test suite: 10 new cases (frame color 1/2/3 within ±5%, update-tile style vs shape params, export/import round trips across sizes, color counts, frameColor).
+- Docs: CLAUDE.md user flow updated for P6 features.
+- engineVersion and footer bumped to 1.5.0.
+- Based on Portuguese tile patterns from the source project (132_tile-coasters-set).
+- [2026-10-03] P6e: comprehensive test suite, version 1.5.0, P6 finalization. HASH
 
 ---
 
