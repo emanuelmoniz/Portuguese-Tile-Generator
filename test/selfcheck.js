@@ -187,6 +187,19 @@ RESULTS.forEach(({ name, groups, r }) => {
   });
 }
 
+// ---- P7a: shape-size limits: every non-exempt island within min/max, or the matching warning is set ----
+[15, 60, 200].forEach((S, i) => [[100], [40, 35, 25]].forEach(pc => {
+  const t0 = Date.now(), res = Engine.generate({ seed: 70 + i, sizeMm: S, colors: COLORS.slice(0, pc.length + 1), percents: pc, coverage: 60, border: 'random' }), r = res.report;
+  const isl = check.islands(res.groups, S, { frameWidth: r.frameIdx >= 0 ? r.frameWidth : 0, fill: res.fill }).flat().filter(x => !x.exempt);
+  assert.strictEqual(r.shapes.count, isl.length, S + 'mm shape count');
+  assert(isl.every(x => x.pct >= r.shapes.min) || r.warnings.includes('shapeTooSmall'), S + 'mm island under the min without a warning');
+  assert(isl.every(x => x.pct <= r.shapes.max) || r.warnings.includes('shapeTooBig'), S + 'mm island over the max without a warning');
+  const up = Engine.rescale(res, S * 1.5).report.shapes; // Update tile re-measures only: same design, same %
+  assert(up.count === r.shapes.count && Math.abs(up.smallestPct - r.shapes.smallestPct) < 1e-3, S + 'mm rescale shapes');
+  console.log('shapes', String(S).padStart(3) + 'mm', pc.length + 1 + 'c', `${Date.now() - t0}ms`, r.mode.padEnd(6), r.shapes.count, 'islands',
+    r.shapes.smallestPct.toFixed(2) + '-' + r.shapes.largestPct.toFixed(1) + '%', r.warnings.length ? 'WARN ' + r.warnings : '');
+}));
+
 // ---- 3D: every mesh watertight (each directed edge once, reverse once), positive volume, volume matches analytics ----
 const Mesh = require('../js/mesh3mf.js'), fflate = require('../vendor/fflate.min.js');
 function check3d(label, groups, colors, size, opts, coverage) {
@@ -216,6 +229,11 @@ RESULTS.forEach(({ name, c, colors, groups, r }) => {
     check3d(name + ' emboss' + o.emboss, groups, colors, c.sizeMm, o, r.coverage.achieved);
     console.log('3D', name.padEnd(28), 'emboss', o.emboss, `${Date.now() - t0}ms`);
   });
+});
+// designs whose rings come within a micron of themselves (pinch / spike): failed "not watertight" before v2.1.0
+[{ seed: 1003, sizeMm: 50, minShapePct: 0, maxShapePct: 100 }, { seed: 1007, sizeMm: 100 }].forEach(o => {
+  const g = Engine.generate({ colors: COLORS, percents: [40, 35, 25], coverage: 60, border: 'on', ...o });
+  [1.5, 0].forEach(emboss => check3d('pinch ' + o.sizeMm + 'mm seed ' + o.seed + ' emboss ' + emboss, g.groups, COLORS, o.sizeMm, { emboss, plate: 3 }, g.report.coverage.achieved));
 });
 // sample files for the slicer check
 const S = RESULTS[2];

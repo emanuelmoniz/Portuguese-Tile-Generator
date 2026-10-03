@@ -31,6 +31,9 @@ var I18N = {
     wcoverage: 'Coverage is outside the ±5% tolerance.', wshares: 'A color share is outside the ±5% tolerance.',
     wchannels: 'Some base-color channels are narrower than 1.5 mm.', wfeatures: 'Some raised features are thinner than 1.0 mm.',
     wsymmetry: 'The design is not perfectly symmetric.', woverlap: 'Raised colors overlap.',
+    wshapeTooSmall: 'A shape is smaller than the minimum ({0}% of the tile, min {1}%).', wshapeTooBig: 'A shape is bigger than the maximum ({2}% of the tile, max {3}%).',
+    rShapes: 'Shapes', rShapesText: '{0}, {1}-{2}% of the tile each (limits {3}-{4}%)',
+    devMin: 'Min shape %', devMax: 'Max shape %', // DEV-P7
     wfail: 'Generation failed: {0}',
     exportJson: 'Export design', copyJson: 'Copy code', importTitle: 'Generate from export', importPaste: 'Paste exported JSON',
     importFile: 'Or choose file', importBtn: 'Import', importOk: 'Design imported.', copied: 'Copied to clipboard.',
@@ -69,6 +72,9 @@ var I18N = {
     wcoverage: 'A cobertura está fora da tolerância de ±5%.', wshares: 'A parte de uma cor está fora da tolerância de ±5%.',
     wchannels: 'Alguns canais da cor base são mais estreitos que 1,5 mm.', wfeatures: 'Alguns elementos em relevo são mais finos que 1,0 mm.',
     wsymmetry: 'O desenho não é perfeitamente simétrico.', woverlap: 'As cores em relevo sobrepõem-se.',
+    wshapeTooSmall: 'Uma forma é menor que o mínimo ({0}% do azulejo, mín. {1}%).', wshapeTooBig: 'Uma forma é maior que o máximo ({2}% do azulejo, máx. {3}%).',
+    rShapes: 'Formas', rShapesText: '{0}, {1}-{2}% do azulejo cada (limites {3}-{4}%)',
+    devMin: 'Forma mín. %', devMax: 'Forma máx. %', // DEV-P7
     wfail: 'Falha ao gerar: {0}',
     exportJson: 'Exportar design', copyJson: 'Copiar código', importTitle: 'Gerar a partir de exportação', importPaste: 'Cole o JSON exportado',
     importFile: 'Ou escolha um ficheiro', importBtn: 'Importar', importOk: 'Design importado.', copied: 'Copiado para a área de transferência.',

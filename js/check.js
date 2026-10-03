@@ -96,6 +96,50 @@ function analyze(groups, sizeMm) {
   };
 }
 
+// Connected islands of one color: [{paths: [outer, its holes...], area}], from a clipper PolyTree.
+// Strictly simple: pieces that touch at a point are always split the same way, whatever the input rings were.
+function split(paths) {
+  var c = new CL.Clipper(), tree = new CL.PolyTree(), out = [];
+  c.StrictlySimple = true;
+  c.AddPaths(paths, CL.PolyType.ptSubject, true);
+  c.Execute(CL.ClipType.ctUnion, tree, CL.PolyFillType.pftNonZero, CL.PolyFillType.pftNonZero);
+  (function walk(outers) { // children of an outer are its holes, children of a hole are the next outers
+    outers.forEach(function (n) {
+      var isl = [n.Contour()];
+      n.Childs().forEach(function (h) { isl.push(h.Contour()); walk(h.Childs()); });
+      out.push({ paths: isl, area: area(isl) });
+    });
+  })(tree.Childs());
+  return out;
+}
+
+// Printed islands per raised color, measured without the frame band: [[{area, pct, exempt, paths}, ...], ...].
+// unions = clipper paths per color. opts.frameWidth (0 = no raised frame), opts.fill = clipper paths of the
+// ground fill: an island holding any of it is exempt.
+var BAND_EDGE_MM = 0.85, ISLAND_DUST_MM2 = 0.1; // slivers the D4 mirroring leaves on its seams: smaller than a 0.4 mm nozzle can print, not islands
+var borderFrameOf =typeof module !== 'undefined' ? require('./shapes.js').borderFrame : borderFrame;
+function islandsOf(unions, sizeMm, opts) {
+  // the band widened by the fillets that join shapes to the frame (closing by the 1.7 mm channel reaches 0.85 mm):
+  // those bits are frame edge, not islands
+  var band = opts.frameWidth ? offset(exec(CL.ClipType.ctUnion, toPaths(borderFrameOf(sizeMm, opts.frameWidth)), null), BAND_EDGE_MM) : null, S2 = sizeMm * sizeMm;
+  // one point well inside each fill piece (the fill is at least a feature wide): a vertex of every ring of it eroded
+  var pts = opts.fill && opts.fill.length ? offset(opts.fill, -0.05).map(function (p) { return p[0]; }) : [];
+  function holds(isl, q) {
+    return CL.Clipper.PointInPolygon(q, isl[0]) === 1 && isl.slice(1).every(function (h) { return CL.Clipper.PointInPolygon(q, h) === 0; });
+  }
+  return unions.map(function (u) {
+    var isl = split(band ? exec(CL.ClipType.ctDifference, u, band) : u).filter(function (i) { return i.area >= ISLAND_DUST_MM2; });
+    isl.forEach(function (i) { i.pct = i.area / S2 * 100; i.exempt = pts.some(function (q) { return holds(i.paths, q); }); });
+    return isl;
+  });
+}
+// the same for shapes in mm (groups as analyze takes them, opts.fill = shapes of the fill)
+function islands(groups, sizeMm, opts) {
+  return islandsOf(groups.map(unionOf), sizeMm, { frameWidth: opts.frameWidth, fill: opts.fill && unionOf(opts.fill) }).map(function (isl) {
+    return isl.map(function (i) { return { area: i.area, pct: i.pct, exempt: i.exempt }; });
+  });
+}
+
 function svgString(groups, colors, sizeMm) {
   var f = function (v) { return v.toFixed(3); };
   var out = ['<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + sizeMm + ' ' + sizeMm + '" width="' + sizeMm + 'mm" height="' + sizeMm + 'mm">',
@@ -116,5 +160,6 @@ function svgString(groups, colors, sizeMm) {
 
 if (typeof module !== 'undefined') module.exports = {
   SC: SC, toPaths: toPaths, exec: exec, offset: offset, unionOf: unionOf, area: area, analyze: analyze, svgString: svgString,
+  split: split, islandsOf: islandsOf, islands: islands, BAND_EDGE_MM: BAND_EDGE_MM,
   MIN_FEATURE_MM: MIN_FEATURE_MM, MIN_CHANNEL_MM: MIN_CHANNEL_MM
 };

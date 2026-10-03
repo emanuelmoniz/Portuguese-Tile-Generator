@@ -1,5 +1,6 @@
 // Design engine (plan.md section 2): seeded padrao layout -> color assignment -> tuning loop.
-// generate({seed, sizeMm, colors, percents, coverage, border, frameColor}) -> {groups, report}
+// generate({seed, sizeMm, colors, percents, coverage, border, frameColor, minShapePct, maxShapePct}) -> {groups, fill, report}
+//   fill = the ground fill (same format as a group), exempt from the shape-size limits like the base and the frame band.
 //   percents = share of the raised area per raised color (sum 100), coverage = raised / tile area in %,
 //   border = 'on' | 'off' | 'random' (decided by the seed).
 // groups[k] = shapes of raised color k in tile mm coordinates (one shape of rings, even-odd), as check.js expects.
@@ -12,6 +13,7 @@ var Engine = (function () {
   var TS = node ? require('./shapes.js') : window, CK = node ? require('./check.js') : window,
       M = node ? require('./motifs.js') : window.Motifs, CL = node ? require('../vendor/clipper.js') : window.ClipperLib;
   var SC = CK.SC, CHANNEL = 1.7, FEATURE = 1.1, TOL = 5, FMIN = 0.55, GROW = 1.12, R4 = [0, 1, 2, 3], DEG = Math.PI / 180;
+  var MIN_SHAPE_PCT = 0.05, MAX_SHAPE_PCT = 35; // printed island area limits, % of the tile (base, frame band, ground fill exempt)
 
   function mulberry32(a) {
     return function () {
@@ -57,7 +59,14 @@ var Engine = (function () {
   }
 
   // ---- 1. seeded layout: slots in tile-centered coordinates, each repeated by its rotations ----
-  function makeLayout(rng, S, border) {
+  // biggest connected piece (mm2, inside the tile) of a slot with every knob at f
+  function biggest(s, f, h) {
+    var shapes = [], sq = [[{ X: -h * SC, Y: -h * SC }, { X: h * SC, Y: -h * SC }, { X: h * SC, Y: h * SC }, { X: -h * SC, Y: h * SC }]];
+    s.make(function () { return f; }).forEach(function (p) { s.rots.forEach(function (k) { shapes.push(rot(p.shape, k, 0)); }); });
+    return Math.max.apply(null, CK.split(I(CK.unionOf(shapes), sq)).map(function (i) { return i.area; }).concat(0));
+  }
+
+  function makeLayout(rng, S, border, lim) { // lim = {min, max} island area in mm2
     var h = S / 2, lvl = S < 30 ? 0 : S < 70 ? 1 : S < 140 ? 2 : 3, g = clamp(0.03 * S, CHANNEL, 5);
     var bw = border ? Math.max(1.2, 0.03 * S) : 0, hi = h - bw * GROW, slots = [];
     function rnd(a, b) { return a + (b - a) * rng(); }
@@ -155,9 +164,18 @@ var Engine = (function () {
         }
       }
       if (!best) break;
-      slots.push(filler(best[0], best[1], Math.min(best[2], 0.12 * S) / GROW));
-      add(slots[slots.length - 1]);
+      var fl = filler(best[0], best[1], Math.min(best[2], 0.12 * S) / GROW);
+      if (biggest(fl, 1, h) < lim.min) break; // its islands would be dropped as too small (and the next gap is smaller)
+      slots.push(fl);
+      add(fl);
     }
+    // no slot piece may grow past the max island area: cap its knob for raised colors (s.max, see build)
+    slots.forEach(function (s) {
+      var lo = FMIN, up = s.cap || GROW;
+      if (s.name === 'frame' || biggest(s, up, h) <= lim.max) return;
+      for (var i = 0; i < 8; i++) { var mid = (lo + up) / 2; if (biggest(s, mid, h) <= lim.max) lo = mid; else up = mid; }
+      s.max = lo;
+    });
     function filler(x, y, r) {
       var kind = r >= 3.5 ? pick(['rosette', 'lobedDisc']) : 'dot', v = variant(kind), seen = {}, pos = [];
       [[x, y], [-x, y], [x, -y], [-x, -y], [y, x], [-y, x], [y, -x], [-y, -x]].forEach(function (q) {
@@ -171,7 +189,7 @@ var Engine = (function () {
         }));
       } };
     }
-    return { S: S, h: h, g: g, border: border, slots: slots, frame: border ? frameAt : -1 };
+    return { S: S, h: h, g: g, bw: bw, border: border, slots: slots, frame: border ? frameAt : -1, lim: lim };
   }
 
   function groupsOf(lay) { // one group per (slot, role), with its area at f = 1
@@ -243,7 +261,7 @@ var Engine = (function () {
   function build(lay, asg, F, gr) {
     var K = F.length - 1, lists = F.map(function () { return []; }), sq = square(lay.S), k;
     lay.slots.forEach(function (s, si) {
-      var f = function (role) { return Math.min(s.cap || GROW, F[asg[si + role]]); };
+      var f = function (role) { var c = asg[si + role]; return Math.min(c < K && s.max || s.cap || GROW, F[c]); };
       s.make(f).forEach(function (p) {
         var c = asg[si + p.role];
         s.rots.forEach(function (k) { lists[c].push(rot(p.shape, k, lay.h)); });
@@ -265,23 +283,28 @@ var Engine = (function () {
     order.forEach(function (k, i) {
       if (i) u[k] = opening(D(u[k], off(U(flat(order.slice(0, i).map(function (j) { return u[j]; }))), CHANNEL)), FEATURE);
     });
+    var fill = []; // the ground fill (exempt from the shape-size limits)
     if (gr) { // ground: fills the rest outside a lobed reserve of radius rho, outlined around its own color;
       // the reserve stays white, or (two-tone) is filled the same way by the inner color
       var reserve = gr.rho > 0 ? CK.toPaths(TS.polarShape(lay.h, lay.h, function (th) { return gr.rho * (0.92 + 0.08 * Math.cos(8 * th)); }, 0, 360, 240)) : [];
       var fillGround = function (kc, region) {
-        var holes = U(white.concat(flat(u.map(function (p, k) { return k === kc ? off(p, gr.gap) : p; }))));
-        u[kc] = U(u[kc].concat(D(opening(D(region, holes), FEATURE), holes)));
+        var holes = U(white.concat(flat(u.map(function (p, k) { return k === kc ? off(p, gr.gap) : p; })))), add = D(opening(D(region, holes), FEATURE), holes);
+        fill = fill.concat(add);
+        u[kc] = U(u[kc].concat(add));
       };
       var inner = gr.inner >= 0 && reserve.length ? I(keep, off(reserve, -gr.gap)) : null; // white line between the fields
       fillGround(gr.color, D(keep, reserve));
       if (inner) fillGround(gr.inner, D(inner, u[gr.color]));
     }
     // white channels still narrower than CHANNEL go to a neighboring color
-    var base = D(keep, U(flat(u))), thin = D(base, opening(base, CHANNEL));
-    for (k = 0; k < K && CK.area(thin) > 1e-3; k++) {
-      var t = I(thin, off(u[k], CHANNEL));
-      if (t.length) { u[k] = U(u[k].concat(t)); thin = D(thin, t); }
+    function fillThin() {
+      var base = D(keep, U(flat(u))), thin = D(base, opening(base, CHANNEL));
+      for (var k = 0; k < K && CK.area(thin) > 1e-3; k++) {
+        var t = I(thin, off(u[k], CHANNEL));
+        if (t.length) { u[k] = U(u[k].concat(t)); thin = D(thin, t); }
+      }
     }
+    fillThin();
     // mirror the eighth (so the loop measures what it returns) and drop specks left by the cuts
     // (a hole is smaller than its outline, so holes never lose their outline). Mirrored again after the
     // filter: clipper may split the same notch differently on two sides, and the filter must not see that.
@@ -289,8 +312,45 @@ var Engine = (function () {
     u = u.map(function (p) {
       return symmetrize(symmetrize(p, lay.S).filter(function (q) { return Math.abs(CL.Clipper.Area(q)) >= speck; }), lay.S);
     });
+    fill = fill.length ? symmetrize(fill, lay.S) : [];
+    // shape-size limits on the printed islands (frame band and ground fill exempt): shrink the ones over the max,
+    // drop the ones under the min, then mirror again (islands of one orbit have equal areas, so D4 stays exact).
+    // A dropped island gives back the thin white bits it got above: they go to a neighbor again, and the
+    // specks that makes are dropped in a second pass.
+    var fw = fc !== undefined && fc < K ? Math.max(1.2, lay.bw * Math.min(GROW, F[fc])) : 0, lim = lay.lim;
+    // islands are measured BAND_EDGE_MM off the frame band: one that touches it is cut with its strip in that edge zone
+    var band = fw ? CK.unionOf([TS.borderFrame(lay.S, fw)]) : [], edge = fw ? D(off(band, CK.BAND_EDGE_MM + 0.01), band) : [];
+    function limits() {
+      var isl = CK.islandsOf(u, lay.S, { frameWidth: fw, fill: fill }), changed = false;
+      u = u.map(function (p, k) {
+        var cut = [], put = [];
+        isl[k].forEach(function (i) {
+          if (i.exempt || (i.area >= lim.min && i.area <= lim.max)) return;
+          var strip = edge.length ? I(I(off(i.paths, CK.BAND_EDGE_MM + 0.1), edge), p) : [];
+          cut.push.apply(cut, i.paths.concat(strip));
+          if (i.area > lim.max) shrink(i.paths, lim, strip.length).forEach(function (j) { if (j.area >= lim.min) put.push.apply(put, j.paths); });
+        });
+        if (!cut.length) return p;
+        changed = true;
+        return U(D(p, cut).concat(put));
+      });
+      if (changed) u = u.map(function (p) { return symmetrize(p, lay.S); });
+      return changed;
+    }
+    if (limits()) { fillThin(); u = u.map(function (p) { return symmetrize(p, lay.S); }); limits(); }
     var areas = u.map(CK.area);
-    return { u: u, areas: areas, raised: sum(areas), white: CK.area(white) };
+    return { u: u, areas: areas, raised: sum(areas), white: CK.area(white), frameWidth: fw, fill: fill };
+  }
+
+  // erode an island until it fits under the max (opened again: no thin necks), at least a channel away
+  // from the frame band it touches; returns the pieces left
+  function shrink(paths, lim, touches) {
+    var lo = touches ? CHANNEL : 0, up = Math.max(lo, Math.sqrt(CK.area(paths))) + 1, best = [];
+    for (var i = 0; i < 8; i++) {
+      var d = (lo + up) / 2, q = CK.split(opening(off(paths, -d), FEATURE));
+      if (Math.max.apply(null, q.map(function (j) { return j.area; }).concat(0)) <= 0.98 * lim.max) { best = q; up = d; } else lo = d;
+    }
+    return best;
   }
 
   // exact D4 symmetry: keep the eighth 0 <= y <= x (tile-centered) and mirror it 8 ways
@@ -348,7 +408,8 @@ var Engine = (function () {
     var seed = (o.seed === undefined ? Math.floor(Math.random() * 4294967296) : o.seed) >>> 0, rng = mulberry32(seed);
     var S = o.sizeMm, p = o.percents, cov = o.coverage, S2 = S * S, T = cov / 100 * S2;
     var border = o.border === 'random' ? rng() < 0.5 : o.border === 'on';
-    var lay = makeLayout(rng, S, border), gs = groupsOf(lay), nominal = sum(gs.map(function (x) { return x.area; })) / S2 * 100;
+    var minS = o.minShapePct === undefined ? MIN_SHAPE_PCT : o.minShapePct, maxS = o.maxShapePct === undefined ? MAX_SHAPE_PCT : o.maxShapePct;
+    var lay = makeLayout(rng, S, border, { min: minS / 100 * S2, max: maxS / 100 * S2 }), gs = groupsOf(lay), nominal = sum(gs.map(function (x) { return x.area; })) / S2 * 100;
     var fc = border && o.frameColor !== undefined && o.frameColor !== 'auto' ? parseInt(o.frameColor, 10) - 1 : -1;
     if (!(fc >= 0 && fc < p.length)) fc = -1;
     var pin = null;
@@ -360,13 +421,16 @@ var Engine = (function () {
       if (r && (!best || r.err < best.err)) best = r;
     });
 
-    var groups = best.r.u.map(function (paths) {
-      return paths.length ? [paths.map(function (pa) { return pa.map(function (q) { return [q.X / SC, q.Y / SC]; }); })] : [];
-    });
+    var groups = best.r.u.map(toMm);
+    var isl = flat(CK.islandsOf(best.r.u, S, { frameWidth: best.r.frameWidth, fill: best.r.fill }))
+      .filter(function (i) { return !i.exempt; }).map(function (i) { return i.pct; });
+    var shapes = { min: minS, max: maxS, count: isl.length,
+      smallestPct: isl.length ? Math.min.apply(null, isl) : 0, largestPct: isl.length ? Math.max.apply(null, isl) : 0 };
     var fi = lay.frame >= 0 ? best.asg[lay.frame + 'a'] : -1; // color group of the frame (white = none)
-    return { groups: groups, report: makeReport(groups, S, { seed: seed, border: border, fc: fc, mode: best.mode, coverage: cov, percents: p,
-      frameIdx: fi >= 0 && fi < p.length ? fi : -1, frameWidth: Math.max(1.2, Math.max(1.2, 0.03 * S) * Math.min(GROW, best.F[fi])) }) };
+    return { groups: groups, fill: toMm(best.r.fill), report: makeReport(groups, S, { seed: seed, border: border, fc: fc, mode: best.mode, coverage: cov, percents: p,
+      shapes: shapes, frameIdx: fi >= 0 && fi < p.length ? fi : -1, frameWidth: Math.max(1.2, Math.max(1.2, 0.03 * S) * Math.min(GROW, best.F[fi])) }) };
   }
+  function toMm(paths) { return paths.length ? [paths.map(function (pa) { return pa.map(function (q) { return [q.X / SC, q.Y / SC]; }); })] : []; }
 
   function makeReport(groups, S, o) {
     var p = o.percents, cov = o.coverage, fc = o.fc, S2 = S * S;
@@ -377,8 +441,9 @@ var Engine = (function () {
       coverage: { target: cov, achieved: an.coverage },
       shares: p.map(function (x, k) { return { target: x, achieved: an.shares[k] }; }),
       thinFeatures: sum(an.thinFeatures), thinChannels: an.thinChannels, overlap: an.overlap, symmetry: an.symmetry.max,
-      frameIdx: o.frameIdx, frameWidth: o.frameWidth, warnings: []
+      frameIdx: o.frameIdx, frameWidth: o.frameWidth, shapes: o.shapes, warnings: []
     };
+    var sh = o.shapes;
     if (Math.abs(an.coverage - cov) > TOL) report.warnings.push('coverage');
     if (report.shares.some(function (s) { return Math.abs(s.achieved - s.target) > TOL; })) report.warnings.push('shares');
     if (fc >= 0 && Math.abs(an.shares[fc] - p[fc]) > TOL) report.warnings.push('frameColorConflict');
@@ -386,6 +451,8 @@ var Engine = (function () {
     if (report.thinFeatures > epsTips) report.warnings.push('features');
     if (an.symmetry.max > eps) report.warnings.push('symmetry');
     if (an.overlap > eps / 10) report.warnings.push('overlap');
+    if (sh.count && sh.smallestPct < sh.min) report.warnings.push('shapeTooSmall');
+    if (sh.count && sh.largestPct > sh.max) report.warnings.push('shapeTooBig');
     return report;
   }
 
@@ -394,9 +461,17 @@ var Engine = (function () {
     var sc = function (a) { return typeof a[0] === 'number' ? [a[0] * k, a[1] * k] : a.map(sc); };
     return sc(groups);
   }
+  // the same report options as generate's, from an existing report. The shape-size limits are never re-run (the
+  // design must not change); the island % stay as measured: scaling and moving the frame band keep every island.
+  function again(r, o) {
+    var x = { seed: r.seed, border: r.border, fc: r.frameColor === 'auto' ? -1 : r.frameColor - 1, mode: r.mode, frameIdx: r.frameIdx, frameWidth: r.frameWidth,
+      coverage: r.coverage.target, percents: r.shares.map(function (s) { return s.target; }), shapes: r.shapes };
+    Object.keys(o).forEach(function (k) { x[k] = o[k]; });
+    return x;
+  }
   function rescale(res, newSizeMm) {
     var r = res.report, groups = scaleGroups(res.groups, newSizeMm / r.sizeMm);
-    return { groups: groups, report: makeReport(groups, newSizeMm, { seed: r.seed, border: r.border, fc: r.frameColor === 'auto' ? -1 : r.frameColor - 1, mode: r.mode, frameIdx: r.frameIdx, frameWidth: r.frameWidth * newSizeMm / r.sizeMm, coverage: r.coverage.target, percents: r.shares.map(function (s) { return s.target; }) }) };
+    return { groups: groups, report: makeReport(groups, newSizeMm, again(r, { frameWidth: r.frameWidth * newSizeMm / r.sizeMm })) };
   }
 
   // new frame color: only the frame rectangles move to another color group, everything else stays
@@ -407,9 +482,9 @@ var Engine = (function () {
       var band = CK.unionOf([TS.borderFrame(S, r.frameWidth)]), g = groups.map(function (s) { return CK.unionOf(s); });
       g[r.frameIdx] = D(g[r.frameIdx], band);
       g[to] = U(g[to].concat(band));
-      groups = g.map(function (paths) { return paths.length ? [paths.map(function (pa) { return pa.map(function (q) { return [q.X / SC, q.Y / SC]; }); })] : []; });
+      groups = g.map(toMm);
     }
-    return { groups: groups, report: makeReport(groups, S, { seed: r.seed, border: r.border, fc: fc, mode: r.mode, frameIdx: to, frameWidth: r.frameWidth, coverage: r.coverage.target, percents: r.shares.map(function (s) { return s.target; }) }) };
+    return { groups: groups, report: makeReport(groups, S, again(r, { fc: fc, frameIdx: to })) };
   }
 
   // form params that differ from the last generated ones (keys of a, compared by value)
@@ -419,7 +494,7 @@ var Engine = (function () {
   }
   function isStyleOnly(keys) { return keys.every(function (k) { return STYLE.indexOf(k) >= 0; }); }
 
-  return { version: '2.0.0', generate: generate, rescale: rescale, reframe: reframe, changedParams: changedParams, isStyleOnly: isStyleOnly, mulberry32: mulberry32 };
+  return { version: '2.1.0', generate: generate, rescale: rescale, reframe: reframe, changedParams: changedParams, isStyleOnly: isStyleOnly, mulberry32: mulberry32 };
 })();
 
 if (typeof module !== 'undefined') module.exports = Engine;

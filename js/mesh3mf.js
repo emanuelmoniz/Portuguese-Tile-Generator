@@ -44,13 +44,15 @@ var Mesh3mf = (function () {
   }
 
   // closed prism z0..z1 per polygon, appended to mesh m. Tile centered on x/y = 0, y up (SVG y is flipped).
-  function prism(m, pls, z0, z1, size, strict) {
+  function prism(m, pls, z0, z1, size, retry) {
     pls.forEach(function (pl) {
       var sub = newMesh();
       emit(sub, pl, z0, z1, size);
-      if (inspect(sub).bad) { // pinched ring (earcut quirk): split it with a strictly simple union and retry once
-        if (strict) throw new Error('mesh not watertight');
-        return prism(m, polys([pl.outer].concat(pl.holes), true), z0, z1, size, true);
+      if (inspect(sub).bad) { // pinched ring (earcut quirk): split it with a strictly simple union and retry,
+        // then once more without micron spikes (vertices within CLEAN of their neighbors' line)
+        var rings = [pl.outer].concat(pl.holes);
+        if (retry === 2) throw new Error('mesh not watertight');
+        return prism(m, polys(retry ? CL.Clipper.CleanPolygons(rings, CLEAN * SC) : rings, true), z0, z1, size, (retry || 0) + 1);
       }
       var b = m.v.length / 3;
       sub.v.forEach(function (x) { m.v.push(x); });
@@ -62,16 +64,18 @@ var Mesh3mf = (function () {
   function emit(m, pl, z0, z1, size) {
     var h = size / 2;
     var rs = [pl.outer].concat(pl.holes).map(function (r, k) { // outer CCW, holes CW
-      var q = r.map(function (p) { return [p.X / SC - h, h - p.Y / SC]; });
+      var q = r.map(function (p) { return [p.X / SC - h, h - p.Y / SC, p.X, p.Y]; });
       return (area2(q) > 0) === (k === 0) ? q : q.reverse();
     });
-    var flat = [], holeAt = [], i, A = 0;
+    var flat = [], ints = [], holeAt = [], i, A = 0;
     rs.forEach(function (q, k) {
       if (k) holeAt.push(flat.length / 2);
       A += area2(q) / 2;
-      q.forEach(function (p) { flat.push(p[0], p[1]); });
+      q.forEach(function (p) { flat.push(p[0], p[1]); ints.push(p[2], p[3]); });
     });
-    var N = flat.length / 2, b = m.v.length / 3, tri = EC(flat, holeAt, 2), s = 0;
+    // triangulate the clipper integers: earcut's orientation tests are exact on them (in mm, rounding can pinch
+    // a ring that comes within a micron of itself)
+    var N = flat.length / 2, b = m.v.length / 3, tri = EC(ints, holeAt, 2), s = 0;
     for (i = 0; i < N; i++) m.v.push(flat[2 * i], flat[2 * i + 1], z0);
     for (i = 0; i < N; i++) m.v.push(flat[2 * i], flat[2 * i + 1], z1);
     for (i = 0; i < tri.length; i += 3) { // earcut orientation is uniform; make the top cap face +z
@@ -107,17 +111,20 @@ var Mesh3mf = (function () {
     return { bad: bad, vol: vol, tris: t.length / 3 };
   }
 
+  // close then open: drops micron-wide slits, spikes and pinches left by the boolean ops
+  function clean(p) { return CK.offset(CK.offset(CK.offset(CK.offset(p, CLEAN), -CLEAN), -CLEAN), CLEAN); }
+
   function build(groups, sizeMm, o) {
     var T = o.plate, E = o.emboss, R = rrect(sizeMm), taken = [], cols = [], parts = [], top = E > 0 ? T : T - INLAY, z1 = E > 0 ? T + E : T;
     groups.forEach(function (g) { // clip to the tile, remove overlaps between colors (earlier color wins)
       var p = CK.exec(CL.ClipType.ctDifference, CK.exec(CL.ClipType.ctIntersection, CK.unionOf(g), R), taken);
-      p = CK.offset(CK.offset(CK.offset(CK.offset(p, CLEAN), -CLEAN), -CLEAN), CLEAN); // close then open: drops micron-wide slits/spikes left by the boolean ops
+      p = clean(p);
       cols.push(p);
       taken = CK.exec(CL.ClipType.ctUnion, taken.concat(p), null);
     });
     var base = newMesh();
     prism(base, polys(R), 0, top, sizeMm);
-    if (E === 0) prism(base, polys(CK.exec(CL.ClipType.ctDifference, R, taken)), top, T, sizeMm);
+    if (E === 0) prism(base, polys(clean(CK.exec(CL.ClipType.ctDifference, R, taken))), top, T, sizeMm);
     parts.push({ name: 'base', extruder: 1, mesh: base });
     cols.forEach(function (p, i) {
       if (!p.length) return;

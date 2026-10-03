@@ -133,7 +133,9 @@
     h += '<p>' + t('rShares') + ': ' + r.shares.map(function (s, i) {
       return '<span class="whitespace-nowrap"><span class="inline-block h-3 w-3 rounded-sm border border-slate-400 align-middle" style="background:' + tile.colors[i + 1] + '"></span> <b>' + f(s.achieved) + '%</b> (' + s.target + '%)</span>';
     }).join(' · ') + '</p>';
-    r.warnings.forEach(function (w) { h += '<p class="text-amber-600 dark:text-amber-400">⚠ ' + t('w' + w) + '</p>'; });
+    var sh = r.shapes, sp = function (x) { return x < 1 ? x.toFixed(2) : f(x); };
+    h += '<p>' + t('rShapes') + ': ' + t('rShapesText', sh.count, sp(sh.smallestPct), sp(sh.largestPct), sh.min, sh.max) + '</p>';
+    r.warnings.forEach(function (w) { h += '<p class="text-amber-600 dark:text-amber-400">⚠ ' + t('w' + w, sp(sh.smallestPct), sh.min, sp(sh.largestPct), sh.max) + '</p>'; });
     el.innerHTML = h;
   }
 
@@ -200,7 +202,10 @@
     clearImport();
     try {
       var fc = p.border === 'off' || p.frameColor === 'auto' ? 'auto' : p.frameColor;
-      var res = Engine.generate({ seed: seed, sizeMm: p.sizeMm, colors: p.colors, percents: p.percents, coverage: p.coverage, border: p.border, frameColor: fc });
+      var o = { seed: seed, sizeMm: p.sizeMm, colors: p.colors, percents: p.percents, coverage: p.coverage, border: p.border, frameColor: fc };
+      var dev = { min: parseFloat($('devMin').value), max: parseFloat($('devMax').value) }; // DEV-P7
+      if (!isNaN(dev.min)) o.minShapePct = dev.min; if (!isNaN(dev.max)) o.maxShapePct = dev.max; // DEV-P7
+      var res = Engine.generate(o);
       tile = { groups: res.groups, report: res.report, colors: p.colors, svg: svgString(res.groups, p.colors, p.sizeMm), gen: { sizeMm: p.sizeMm, frameColor: fc } };
     } catch (e) {
       tile = lastGenerated = null;
@@ -367,5 +372,5 @@
   // Footer initialization
   var d = new Date();
   $('footerDate').textContent = d.getFullYear();
-  $('footerVersion').textContent = 'v2.0.0';
+  $('footerVersion').textContent = 'v2.1.0';
 })();
