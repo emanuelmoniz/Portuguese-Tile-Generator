@@ -68,6 +68,7 @@ Format: [Semantic Versioning](https://semver.org/) — v[major].[minor].[patch].
 - Confirm dialog: "Generate new / Update tile / Cancel" when switching intent.
 - Tests: polygon count/coverage preserved under scale+recolor; Update-enable state logic.
 - [2026-10-03] P6c: Generate/Update flow, confirm dialog, state tracking. [6c34a02](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/6c34a02)
+- [2026-10-03] Frame color change is a style update: only the frame moves to the new color, shapes kept. [1afc0e6](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/1afc0e6)
 
 ---
 
