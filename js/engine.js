@@ -324,7 +324,7 @@ var Engine = (function () {
       var err = Math.max.apply(null, [Math.abs(c - cov)].concat(sh.map(function (s, k) { return Math.abs(s - p[k]); })));
       if (!best || err < best.err - 0.2) gain = it;
       else if (it - gain >= 4) break; // no progress
-      if (!best || err < best.err) best = { r: r, err: err, mode: !gr ? 'white' : gr.inner >= 0 ? 'two' : 'ground' };
+      if (!best || err < best.err) best = { r: r, err: err, F: F.slice(), asg: a.asg, mode: !gr ? 'white' : gr.inner >= 0 ? 'two' : 'ground' };
       if (err < 1) break;
       var was = F.join();
       for (k = 0; k < K; k++) if (!gr || k !== gr.color) F[k] = step(F[k], p[k] / 100 * T, r.areas[k], FMIN, cap[k]);
@@ -363,7 +363,9 @@ var Engine = (function () {
     var groups = best.r.u.map(function (paths) {
       return paths.length ? [paths.map(function (pa) { return pa.map(function (q) { return [q.X / SC, q.Y / SC]; }); })] : [];
     });
-    return { groups: groups, report: makeReport(groups, S, { seed: seed, border: border, fc: fc, mode: best.mode, coverage: cov, percents: p }) };
+    var fi = lay.frame >= 0 ? best.asg[lay.frame + 'a'] : -1; // color group of the frame (white = none)
+    return { groups: groups, report: makeReport(groups, S, { seed: seed, border: border, fc: fc, mode: best.mode, coverage: cov, percents: p,
+      frameIdx: fi >= 0 && fi < p.length ? fi : -1, frameWidth: Math.max(1.2, Math.max(1.2, 0.03 * S) * Math.min(GROW, best.F[fi])) }) };
   }
 
   function makeReport(groups, S, o) {
@@ -375,7 +377,7 @@ var Engine = (function () {
       coverage: { target: cov, achieved: an.coverage },
       shares: p.map(function (x, k) { return { target: x, achieved: an.shares[k] }; }),
       thinFeatures: sum(an.thinFeatures), thinChannels: an.thinChannels, overlap: an.overlap, symmetry: an.symmetry.max,
-      warnings: []
+      frameIdx: o.frameIdx, frameWidth: o.frameWidth, warnings: []
     };
     if (Math.abs(an.coverage - cov) > TOL) report.warnings.push('coverage');
     if (report.shares.some(function (s) { return Math.abs(s.achieved - s.target) > TOL; })) report.warnings.push('shares');
@@ -394,17 +396,30 @@ var Engine = (function () {
   }
   function rescale(res, newSizeMm) {
     var r = res.report, groups = scaleGroups(res.groups, newSizeMm / r.sizeMm);
-    return { groups: groups, report: makeReport(groups, newSizeMm, { seed: r.seed, border: r.border, fc: r.frameColor === 'auto' ? -1 : r.frameColor - 1, mode: r.mode, coverage: r.coverage.target, percents: r.shares.map(function (s) { return s.target; }) }) };
+    return { groups: groups, report: makeReport(groups, newSizeMm, { seed: r.seed, border: r.border, fc: r.frameColor === 'auto' ? -1 : r.frameColor - 1, mode: r.mode, frameIdx: r.frameIdx, frameWidth: r.frameWidth * newSizeMm / r.sizeMm, coverage: r.coverage.target, percents: r.shares.map(function (s) { return s.target; }) }) };
+  }
+
+  // new frame color: only the frame rectangles move to another color group, everything else stays
+  function reframe(res, frameColor) {
+    var r = res.report, S = r.sizeMm, k = r.shares.length, to = frameColor === 'auto' ? r.frameIdx : frameColor - 1, groups = res.groups, fc = frameColor === 'auto' ? -1 : to;
+    if (r.frameIdx < 0 || !(to >= 0 && to < k)) return res;
+    if (to !== r.frameIdx) {
+      var band = CK.unionOf([TS.borderFrame(S, r.frameWidth)]), g = groups.map(function (s) { return CK.unionOf(s); });
+      g[r.frameIdx] = D(g[r.frameIdx], band);
+      g[to] = U(g[to].concat(band));
+      groups = g.map(function (paths) { return paths.length ? [paths.map(function (pa) { return pa.map(function (q) { return [q.X / SC, q.Y / SC]; }); })] : []; });
+    }
+    return { groups: groups, report: makeReport(groups, S, { seed: r.seed, border: r.border, fc: fc, mode: r.mode, frameIdx: to, frameWidth: r.frameWidth, coverage: r.coverage.target, percents: r.shares.map(function (s) { return s.target; }) }) };
   }
 
   // form params that differ from the last generated ones (keys of a, compared by value)
-  var STYLE = ['sizeMm', 'colors'];
+  var STYLE = ['sizeMm', 'colors', 'frameColor'];
   function changedParams(last, cur) {
     return Object.keys(last).filter(function (k) { return JSON.stringify(last[k]).toLowerCase() !== JSON.stringify(cur[k]).toLowerCase(); });
   }
   function isStyleOnly(keys) { return keys.every(function (k) { return STYLE.indexOf(k) >= 0; }); }
 
-  return { generate: generate, rescale: rescale, changedParams: changedParams, isStyleOnly: isStyleOnly, mulberry32: mulberry32 };
+  return { generate: generate, rescale: rescale, reframe: reframe, changedParams: changedParams, isStyleOnly: isStyleOnly, mulberry32: mulberry32 };
 })();
 
 if (typeof module !== 'undefined') module.exports = Engine;

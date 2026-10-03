@@ -164,6 +164,7 @@
     var p = validate();
     if (!p || !lastGenerated) return;
     var res = Engine.rescale({ groups: tile.groups, report: tile.report }, p.sizeMm);
+    if (tile.report.border && lastGenerated.frameColor !== p.frameColor) res = Engine.reframe(res, p.frameColor);
     tile = { groups: res.groups, report: res.report, colors: p.colors, svg: svgString(res.groups, p.colors, p.sizeMm) };
     lastGenerated = p;
     show();
@@ -177,6 +178,7 @@
     if (!keys.length || !Engine.isStyleOnly(keys)) return generate();
     var names = [];
     if (keys.indexOf('sizeMm') >= 0) names.push(t('chSize'));
+    if (keys.indexOf('frameColor') >= 0) names.push(t('chFrame'));
     if (keys.indexOf('colors') >= 0) p.colors.forEach(function (c, i) {
       if (c.toLowerCase() !== lastGenerated.colors[i].toLowerCase()) names.push(i ? t('raised') + ' ' + i : t('chBase'));
     });

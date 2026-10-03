@@ -115,8 +115,23 @@ RESULTS.forEach(({ name, groups, r }) => {
   const last = { sizeMm: 60, colors: ['#ffffff', '#1d4e9e'], percents: [100], coverage: 60, border: 'on', frameColor: 'auto' };
   const style = x => Engine.isStyleOnly(Engine.changedParams(last, { ...last, ...x }));
   assert(style({ sizeMm: 80 }) && style({ colors: ['#ffffff', '#1D4E9F'] }) && style({}));
-  assert(!style({ coverage: 50 }) && !style({ sizeMm: 80, border: 'off' }) && !style({ percents: [50, 50] }) && !style({ frameColor: '1' }));
+  assert(!style({ coverage: 50 }) && !style({ sizeMm: 80, border: 'off' }) && !style({ percents: [50, 50] }) && style({ frameColor: '1' }));
   assert(style({ coverage: 60 }), 'changed back to generated value re-enables');
+}
+
+// ---- reframe: only the frame moves; everything else keeps its geometry ----
+{
+  const S = 60, base = Engine.generate({ seed: 7, sizeMm: S, colors: COLORS, percents: [34, 33, 33], coverage: 60, border: 'on', frameColor: 1 });
+  [2, 3, 1, 'auto'].forEach(fc => {
+    const up = Engine.reframe(base, fc), n = fc === 'auto' ? 1 : fc;
+    assert.strictEqual(up.report.frameIdx, n - 1);
+    for (let i = 1; i < 20; i++) {
+      const x = S * i / 20;
+      assert(inGroup(up.groups[n - 1], x, 0.5) && inGroup(up.groups[n - 1], 0.5, x), 'reframe ' + fc + ' at ' + x);
+    }
+    assert(Math.abs(up.report.coverage.achieved - base.report.coverage.achieved) < 0.01, 'reframe keeps coverage');
+    console.log('reframe', fc, 'shares', up.report.shares.map(s => s.achieved.toFixed(1)).join('/'), up.report.warnings.length ? 'WARN ' + up.report.warnings : '');
+  });
 }
 
 // ---- 3D: every mesh watertight (each directed edge once, reverse once), positive volume, volume matches analytics ----
