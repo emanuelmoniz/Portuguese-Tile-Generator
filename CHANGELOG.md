@@ -80,6 +80,7 @@ Format: [Semantic Versioning](https://semver.org/) — v[major].[minor].[patch].
 - UI: "Export design" button (JSON file + copy-to-clipboard).
 - "Generate from export" section: textarea + file picker → import & regenerate.
 - Tests: export→import round-trip gives identical SVG.
+- [2026-10-03] P6d: JSON export/import, design sharing, round-trip testing. [235e268](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/235e268)
 
 ---
 
