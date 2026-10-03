@@ -1,4 +1,4 @@
-(function () {
+﻿(function () {
   var root = document.documentElement;
   function $(id) { return document.getElementById(id); }
   function get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
@@ -131,10 +131,10 @@
     h += '<p>' + t('rCoverage') + ': <b>' + f(r.coverage.achieved) + '%</b> (' + t('rTarget') + ' ' + r.coverage.target + '%)</p>';
     h += '<p>' + t('rShares') + ': ' + r.shares.map(function (s, i) {
       return '<span class="whitespace-nowrap"><span class="inline-block h-3 w-3 rounded-sm border border-line align-middle" style="background:' + tile.colors[i + 1] + '"></span> <b>' + f(s.achieved) + '%</b> (' + s.target + '%)</span>';
-    }).join(' · ') + '</p>';
+    }).join(' Â· ') + '</p>';
     var sh = r.shapes, sp = function (x) { return x < 1 ? x.toFixed(2) : f(x); };
     h += '<p>' + t('rShapes') + ': ' + t('rShapesText', sh.count, sp(sh.smallestPct), sp(sh.largestPct), sh.min, sh.max) + '</p>';
-    r.warnings.forEach(function (w) { h += '<p class="text-ocre">⚠ ' + t('w' + w, sp(sh.smallestPct), sh.min, sp(sh.largestPct), sh.max) + '</p>'; });
+    r.warnings.forEach(function (w) { h += '<p class="text-ocre">âš  ' + t('w' + w, sp(sh.smallestPct), sh.min, sp(sh.largestPct), sh.max) + '</p>'; });
     el.innerHTML = h;
   }
 
@@ -395,5 +395,5 @@
   // Footer initialization
   var d = new Date();
   $('footerDate').textContent = d.getFullYear();
-  $('footerVersion').textContent = 'v3.3.0';
+  $('footerVersion').textContent = 'v3.3.1';
 })();
