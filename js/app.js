@@ -197,7 +197,7 @@
     var p = validate();
     if (!p) return;
     var keys = lastGenerated && tile ? Engine.changedParams(lastGenerated, p) : [];
-    if (!keys.length || !Engine.isStyleOnly(keys)) return generate();
+    if (!keys.length || !Engine.isStyleOnly(keys)) return busy(generate);
     var names = [];
     if (keys.indexOf('sizeMm') >= 0) names.push(t('chSize'));
     if (keys.indexOf('frameColor') >= 0) names.push(t('chFrame'));
@@ -224,6 +224,25 @@
     }
     lastGenerated = p;
     show();
+  }
+
+  // show the loader, let it paint, run the heavy call; hidden again in finally
+  function busy(fn) {
+    var btns = ['generate', 'update', 'open3d', 'importBtn'];
+    $('loader').classList.remove('hidden');
+    $('stage').setAttribute('aria-busy', 'true');
+    btns.forEach(function (id) { $(id).disabled = true; });
+    requestAnimationFrame(function () {
+      setTimeout(function () {
+        try { fn(); } finally {
+          $('loader').classList.add('hidden');
+          $('stage').setAttribute('aria-busy', 'false');
+          $('generate').disabled = $('importBtn').disabled = false;
+          $('open3d').disabled = !tile;
+          validate();
+        }
+      }, 0);
+    });
   }
 
   function clearAll() {
@@ -258,6 +277,11 @@
     ev.preventDefault();
     var o = validate3d();
     if (!o) return;
+    $('dlg3d').close();
+    busy(function () { run3mf(o); });
+  }
+
+  function run3mf(o) {
     try {
       var r = Mesh3mf.generate(tile.groups, tile.colors, tile.report.sizeMm, o);
       s3d = o;
@@ -309,8 +333,8 @@
 
   $('numColors').onchange = syncRows;
   $('generate').onclick = generateClicked;
-  $('update').onclick = updateTile;
-  $('dlgNew').onclick = function () { $('dlgUpdate').close(); generate(); };
+  $('update').onclick = function () { busy(updateTile); };
+  $('dlgNew').onclick = function () { $('dlgUpdate').close(); busy(generate); };
   // ---- export / import ----
   function exportText() {
     return JSON.stringify(Export.build({ seed: tile.report.seed, generatedSizeMm: tile.gen.sizeMm, sizeMm: tile.report.sizeMm, colors: tile.colors,
@@ -349,12 +373,12 @@
   $('copyJson').onclick = function () {
     navigator.clipboard.writeText(exportText()).then(function () { importMsg([], [], false); var p = document.createElement('p'); p.textContent = t('copied'); $('importMsg').appendChild(p); });
   };
-  $('importBtn').onclick = function () { importDesign($('importText').value); };
+  $('importBtn').onclick = function () { var x = $('importText').value; busy(function () { importDesign(x); }); };
   $('importFile').onchange = function () {
     var f = this.files[0];
-    if (f) f.text().then(function (s) { $('importText').value = s; importDesign(s); });
+    if (f) f.text().then(function (s) { $('importText').value = s; busy(function () { importDesign(s); }); });
   };
-  $('dlgOnly').onclick = function () { $('dlgUpdate').close(); updateTile(); };
+  $('dlgOnly').onclick = function () { $('dlgUpdate').close(); busy(updateTile); };
   $('dlgCancel').onclick = function () { $('dlgUpdate').close(); };
   $('clear').onclick = clearAll;
   $('saveSvg').onclick = function () { save(new Blob([tile.svg], { type: 'image/svg+xml' }), 'svg'); };
@@ -388,5 +412,5 @@
   // Footer initialization
   var d = new Date();
   $('footerDate').textContent = d.getFullYear();
-  $('footerVersion').textContent = 'v3.0.0';
+  $('footerVersion').textContent = 'v3.1.0';
 })();
