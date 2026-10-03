@@ -114,6 +114,17 @@ Format: [Semantic Versioning](https://semver.org/) — v[major].[minor].[patch].
 
 ---
 
+## [2.1.1] – 2026-10-03
+
+- New **Complexity** option (Auto / 1–4, default 2) sets how many motifs a tile gets; Auto picks it from the tile size, as before. It is saved in the export; older exports import as Auto.
+- Filled-background layouts are tried first from 50% coverage (was 45%).
+- Thin-shape warnings now say the design is not suited for 3D printing and suggest a bigger tile or a lower complexity.
+- Shape-size limits fixed at 0.05% / 35%; the dev panel is removed.
+- Fix: two raised colors could overlap in rare designs.
+- [2026-10-03] Complexity option, final shape limits, dev panel removed. [7dcfb54](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/7dcfb54)
+
+---
+
 ## Maintenance
 
 **After each commit+push to main:**
