@@ -153,3 +153,11 @@ Keep footer version and changelog synchronized. See CLAUDE.md "Maintenance" for 
 - [2026-10-03] P7c: azulejo redesign, responsive layout, expandable instructions. [67d1b6f](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/67d1b6f)
 - [2026-10-03] Intro and How to use span the full page width (3 columns on desktop). [433b75f](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/433b75f)
 - [2026-10-03] Header: faint azulejo wall pattern with a cobalt rule instead of the frieze; plaque has a single frame. [24c7d64](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/24c7d64)
+
+## [3.0.0] – 2026-10-03 (Phase P7d – P7 complete)
+
+- P7 summary: shape-size limits (P7a, 0.05%-35% per island), 3D viewer with 2D/3D toggle (P7b), azulejo redesign, responsive layout, expandable instructions (P7c).
+- Fix: Save bundle / Save PNG no longer throw when Clear or Update tile runs before the PNG is ready (state captured before the async step).
+- Docs: CLAUDE.md versioning, README features and three.js credit; `_changes.md` removed (now in plan_v3.md).
+- [2026-10-03] v3.0.0: P7 complete (shape limits, 3D viewer, redesign). [COMMIT](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/COMMIT)
+

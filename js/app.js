@@ -276,10 +276,11 @@
   }
 
   // ---- save ----
-  function save(blob, ext) {
+  function baseName(t) { return 'tile_' + t.report.sizeMm + 'mm_seed' + t.report.seed; }
+  function save(blob, ext, name) {
     var a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = 'tile_' + tile.report.sizeMm + 'mm_seed' + tile.report.seed + '.' + ext;
+    a.download = (name || baseName(tile)) + '.' + ext;
     a.click();
     setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
   }
@@ -357,7 +358,7 @@
   $('dlgCancel').onclick = function () { $('dlgUpdate').close(); };
   $('clear').onclick = clearAll;
   $('saveSvg').onclick = function () { save(new Blob([tile.svg], { type: 'image/svg+xml' }), 'svg'); };
-  $('savePng').onclick = function () { $('preview').toBlob(function (b) { save(b, 'png'); }, 'image/png'); };
+  $('savePng').onclick = function () { var n = baseName(tile); $('preview').toBlob(function (b) { save(b, 'png', n); }, 'image/png'); };
   ['emboss', 'plate'].forEach(function (id) { $(id).addEventListener('input', validate3d); });
   $('open3d').onclick = open3d;
   $('tab2d').onclick = function () { view('2d'); };
@@ -367,13 +368,14 @@
   $('cancel3d').onclick = function () { $('dlg3d').close(); };
   $('save3mf').onclick = function () { save(new Blob([tile.mf.bytes], { type: 'model/3mf' }), '3mf'); };
   $('saveBundle').onclick = function () {
+    var t = tile, n = baseName(t);
     $('preview').toBlob(function (b) {
       b.arrayBuffer().then(function (ab) {
-        var n = 'tile_' + tile.report.sizeMm + 'mm_seed' + tile.report.seed, z = {};
-        z[n + '.svg'] = fflate.strToU8(tile.svg);
+        var z = {};
+        z[n + '.svg'] = fflate.strToU8(t.svg);
         z[n + '.png'] = [new Uint8Array(ab), { level: 0 }];
-        z[n + '.3mf'] = [tile.mf.bytes, { level: 0 }];
-        save(new Blob([fflate.zipSync(z)], { type: 'application/zip' }), 'zip');
+        z[n + '.3mf'] = [t.mf.bytes, { level: 0 }];
+        save(new Blob([fflate.zipSync(z)], { type: 'application/zip' }), 'zip', n);
       });
     }, 'image/png');
   };
@@ -386,5 +388,5 @@
   // Footer initialization
   var d = new Date();
   $('footerDate').textContent = d.getFullYear();
-  $('footerVersion').textContent = 'v2.3.0';
+  $('footerVersion').textContent = 'v3.0.0';
 })();

@@ -7,6 +7,8 @@ A static web app that generates Portuguese azulejo-style square tiles as SVG, PN
 - **Generate tiles:** Specify a tile size (15–200 mm), 2–4 colors with coverage percentage, and coverage target (30–90%). The engine produces a unique design with perfect D4 (four-fold rotational) symmetry, inspired by traditional Portuguese tilework.
 - **Preview & report:** See the generated tile on canvas, with measurements of achieved coverage and color distribution, plus warnings if targets are missed.
 - **Save assets:** Export the design as SVG (vector), PNG (raster), or 3MF (multi-color 3D model).
+- **Shape limits:** every printed island of a raised color is 0.05%–35% of the tile area (base, frame band and ground fill exempt), so no specks and no giant blobs.
+- **3D viewer:** after Generate 3D, orbit and zoom the real 3MF meshes in the browser (2D/3D toggle on the preview).
 - **3D printing:** Choose emboss (raised details) or inlay (recessed details), set plate thickness, and export as 3MF. The sliced format includes color assignments for Bambu Studio and Orca Slicer.
 
 ## Getting Started
@@ -145,6 +147,10 @@ English and Portuguese (PT). Toggle in the top-right corner. Language preference
 ## Theme
 
 Dark and light modes. Automatically matches your system setting, or toggle manually. Theme preference is saved.
+
+## Credits
+
+3D viewer: [three.js](https://threejs.org) r147 (MIT), vendored. Fonts Lusitana and Albert Sans (OFL).
 
 ## License
 
