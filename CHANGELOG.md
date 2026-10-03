@@ -43,7 +43,7 @@ Format: [Semantic Versioning](https://semver.org/) — v[major].[minor].[patch].
 - New sections: "About" (description) + "Instructions" (workflow bullets), EN+PT via i18n.
 - CSS: Added `mb-6`, `leading-relaxed`, `underline`, `text-slate-3xx`, hover states for footer links.
 - Footer init: app.js sets the current year and version on page load.
-- [15f901a](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/15f901a)
+- [1f70952](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/1f70952)
 
 ---
 
@@ -55,7 +55,7 @@ Format: [Semantic Versioning](https://semver.org/) — v[major].[minor].[patch].
 - Engine: pins frame group to chosen color in color-assignment search.
 - Tests: frame ring entirely in chosen color's group.
 - Warning `frameColorConflict` when the pinned frame color misses its share.
-- [2026-10-03] P6b: frame color parameter, form selector, engine support. [f873be8](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/f873be8)
+- [2026-10-03] P6b: frame color parameter, form selector, engine support. [4cdec77](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/4cdec77)
 
 ---
 
@@ -67,8 +67,8 @@ Format: [Semantic Versioning](https://semver.org/) — v[major].[minor].[patch].
 - "Update tile" button: style-param-only (size/colors), scales & recolors without regenerating.
 - Confirm dialog: "Generate new / Update tile / Cancel" when switching intent.
 - Tests: polygon count/coverage preserved under scale+recolor; Update-enable state logic.
-- [2026-10-03] P6c: Generate/Update flow, confirm dialog, state tracking. [6c34a02](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/6c34a02)
-- [2026-10-03] Frame color change is a style update: only the frame moves to the new color, shapes kept. [1afc0e6](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/1afc0e6)
+- [2026-10-03] P6c: Generate/Update flow, confirm dialog, state tracking. [b1329a6](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/b1329a6)
+- [2026-10-03] Frame color change is a style update: only the frame moves to the new color, shapes kept. [017fac9](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/017fac9)
 
 ---
 
@@ -80,7 +80,7 @@ Format: [Semantic Versioning](https://semver.org/) — v[major].[minor].[patch].
 - UI: "Export design" button (JSON file + copy-to-clipboard).
 - "Generate from export" section: textarea + file picker → import & regenerate.
 - Tests: export→import round-trip gives identical SVG.
-- [2026-10-03] P6d: JSON export/import, design sharing, round-trip testing. [235e268](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/235e268)
+- [2026-10-03] P6d: JSON export/import, design sharing, round-trip testing. [28f9445](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/28f9445)
 
 ---
 
@@ -92,7 +92,7 @@ Format: [Semantic Versioning](https://semver.org/) — v[major].[minor].[patch].
 - Docs: CLAUDE.md user flow updated for P6 features.
 - engineVersion and footer bumped to 1.5.0.
 - Based on Portuguese tile patterns from the source project (132_tile-coasters-set).
-- [2026-10-03] P6e: comprehensive test suite, version 1.5.0, P6 finalization. [3436718](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/3436718)
+- [2026-10-03] P6e: comprehensive test suite, version 1.5.0, P6 finalization. [3494a92](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/3494a92)
 
 ---
 
@@ -100,7 +100,7 @@ Format: [Semantic Versioning](https://semver.org/) — v[major].[minor].[patch].
 
 **P6a–P6e complete.** Branding, frame color, Generate/Update flow, JSON export/import, and the full test suite.
 
-- [2026-10-03] Version bump to 2.0.0 (footer, engineVersion). [2bd2801](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/2bd2801)
+- [2026-10-03] Version bump to 2.0.0 (footer, engineVersion). [3b1d3b1](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/3b1d3b1)
 
 ---
 
@@ -109,7 +109,7 @@ Format: [Semantic Versioning](https://semver.org/) — v[major].[minor].[patch].
 **After each commit+push to main:**
 1. Update `index.html` footer version (semver; the year is automatic).
 2. Update `CHANGELOG.md`: add entry under the current version.
-   - Format: `- [YYYY-MM-DD] description. [commit](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/[3436718](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/3436718))`
-   - Example: `- [2026-10-05] P6a: footer, favicon, branding. [aef4027](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/aef4027)`
+   - Format: `- [YYYY-MM-DD] description. [commit](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/[3494a92](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/3494a92))`
+   - Example: `- [2026-10-05] P6a: footer, favicon, branding. [1f3cb22](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/1f3cb22)`
 
 Keep footer version and changelog synchronized. See CLAUDE.md "Maintenance" for details.
