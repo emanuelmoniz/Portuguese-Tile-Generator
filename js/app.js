@@ -12,6 +12,7 @@
   var tile = null;      // { groups, report, colors, svg } of the current design
   var errors = {};      // field id -> [i18n key, ...args]
   var s3d = { emboss: 1, plate: 3 };  // last confirmed 3D settings (mm)
+  var lastGenerated = null;           // form params of the last generated tile
 
   function setTheme(dark) {
     root.classList.toggle('dark', dark);
@@ -88,7 +89,9 @@
     p.frameColor = $('frameColor').value;
     if (p.frameColor !== 'auto' && !(+p.frameColor <= k)) errors.frameColor = ['errFrameColor'];
     showErrors();
-    return Object.keys(errors).length ? null : p;
+    p = Object.keys(errors).length ? null : p;
+    $('update').disabled = !(tile && lastGenerated && p && Engine.isStyleOnly(Engine.changedParams(lastGenerated, p)));
+    return p;
   }
 
   function showErrors() {
@@ -141,9 +144,44 @@
 
   function setButtons() {
     var on = !!tile;
-    ['regenerate', 'saveSvg', 'savePng', 'open3d', 'clear'].forEach(function (id) { $(id).disabled = !on; });
+    ['saveSvg', 'savePng', 'open3d', 'clear'].forEach(function (id) { $(id).disabled = !on; });
     ['save3mf', 'saveBundle'].forEach(function (id) { $(id).disabled = !(on && tile.mf); });
     render3d();
+    validate();
+  }
+
+  function show() {
+    $('seed').textContent = tile.report.seed;
+    draw($('preview'), tile.groups, tile.colors, tile.report.sizeMm);
+    $('preview').classList.remove('hidden');
+    $('previewEmpty').classList.add('hidden');
+    renderReport();
+    setButtons();
+  }
+
+  // style-only change: same shapes, new size and colors; 3MF must be regenerated
+  function updateTile() {
+    var p = validate();
+    if (!p || !lastGenerated) return;
+    var res = Engine.rescale({ groups: tile.groups, report: tile.report }, p.sizeMm);
+    tile = { groups: res.groups, report: res.report, colors: p.colors, svg: svgString(res.groups, p.colors, p.sizeMm) };
+    lastGenerated = p;
+    show();
+  }
+
+  // "Generate" after a style-only change: ask whether to keep the design
+  function generateClicked() {
+    var p = validate();
+    if (!p) return;
+    var keys = lastGenerated && tile ? Engine.changedParams(lastGenerated, p) : [];
+    if (!keys.length || !Engine.isStyleOnly(keys)) return generate();
+    var names = [];
+    if (keys.indexOf('sizeMm') >= 0) names.push(t('chSize'));
+    if (keys.indexOf('colors') >= 0) p.colors.forEach(function (c, i) {
+      if (c.toLowerCase() !== lastGenerated.colors[i].toLowerCase()) names.push(i ? t('raised') + ' ' + i : t('chBase'));
+    });
+    $('dlgUpdateMsg').textContent = t('dlgUpdateMsg', names.join(', '));
+    $('dlgUpdate').showModal();
   }
 
   function generate() {
@@ -153,21 +191,17 @@
       var res = Engine.generate({ sizeMm: p.sizeMm, colors: p.colors, percents: p.percents, coverage: p.coverage, border: p.border, frameColor: p.border === 'off' || p.frameColor === 'auto' ? 'auto' : p.frameColor });
       tile = { groups: res.groups, report: res.report, colors: p.colors, svg: svgString(res.groups, p.colors, p.sizeMm) };
     } catch (e) {
-      tile = null;
+      tile = lastGenerated = null;
       $('report').textContent = t('wfail', e.message);
       setButtons();
       return;
     }
-    $('seed').textContent = tile.report.seed;
-    draw($('preview'), tile.groups, tile.colors, p.sizeMm);
-    $('preview').classList.remove('hidden');
-    $('previewEmpty').classList.add('hidden');
-    renderReport();
-    setButtons();
+    lastGenerated = p;
+    show();
   }
 
   function clearAll() {
-    tile = null;
+    tile = lastGenerated = null;
     $('params').reset();
     $('form3d').reset();
     s3d = { emboss: 1, plate: 3 };
@@ -246,8 +280,11 @@
   })(i);
 
   $('numColors').onchange = syncRows;
-  $('generate').onclick = generate;
-  $('regenerate').onclick = generate;
+  $('generate').onclick = generateClicked;
+  $('update').onclick = updateTile;
+  $('dlgNew').onclick = function () { $('dlgUpdate').close(); generate(); };
+  $('dlgOnly').onclick = function () { $('dlgUpdate').close(); updateTile(); };
+  $('dlgCancel').onclick = function () { $('dlgUpdate').close(); };
   $('clear').onclick = clearAll;
   $('saveSvg').onclick = function () { save(new Blob([tile.svg], { type: 'image/svg+xml' }), 'svg'); };
   $('savePng').onclick = function () { $('preview').toBlob(function (b) { save(b, 'png'); }, 'image/png'); };
@@ -276,5 +313,5 @@
   // Footer initialization
   var d = new Date();
   $('footerDate').textContent = d.getFullYear();
-  $('footerVersion').textContent = 'v1.2.0';
+  $('footerVersion').textContent = 'v1.3.0';
 })();

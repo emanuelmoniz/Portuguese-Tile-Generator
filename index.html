@@ -79,7 +79,7 @@
         </div>
         <div class="flex gap-2">
           <button id="generate" type="button" data-i18n="generate" class="rounded bg-blue-600 px-4 py-2 text-white"></button>
-          <button id="regenerate" type="button" data-i18n="regenerate" disabled class="rounded border border-slate-300 px-4 py-2 disabled:opacity-40 dark:border-slate-600"></button>
+          <button id="update" type="button" data-i18n="update" disabled class="rounded border border-slate-300 px-4 py-2 disabled:opacity-40 dark:border-slate-600"></button>
         </div>
       </form>
     </section>
@@ -125,6 +125,16 @@
         <button id="cancel3d" type="button" data-i18n="cancel" class="rounded border border-slate-300 px-4 py-2 dark:border-slate-600"></button>
       </div>
     </form>
+  </dialog>
+
+  <dialog id="dlgUpdate" class="m-auto w-96 rounded bg-white p-6 text-slate-900 backdrop:bg-black/50 dark:bg-slate-800 dark:text-slate-100">
+    <h2 class="text-lg font-medium" data-i18n="dlgUpdate"></h2>
+    <p id="dlgUpdateMsg" class="mt-4 text-sm"></p>
+    <div class="mt-4 flex flex-wrap gap-2">
+      <button id="dlgNew" type="button" data-i18n="dlgNew" class="rounded bg-blue-600 px-4 py-2 text-white"></button>
+      <button id="dlgOnly" type="button" data-i18n="dlgOnly" class="rounded border border-slate-300 px-4 py-2 dark:border-slate-600"></button>
+      <button id="dlgCancel" type="button" data-i18n="cancel" class="rounded border border-slate-300 px-4 py-2 dark:border-slate-600"></button>
+    </div>
   </dialog>
 
   <script src="vendor/clipper.js"></script>

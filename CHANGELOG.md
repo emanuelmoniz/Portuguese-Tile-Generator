@@ -59,14 +59,14 @@ Format: [Semantic Versioning](https://semver.org/) — v[major].[minor].[patch].
 
 ---
 
-## [1.3.0] – *Planned* (Phase P6c – Generate/Update Flow)
+## [1.3.0] – 2026-10-03 (Phase P6c – Generate/Update Flow)
 
 **Preserve designs while changing size/colors.**
 
 - "Generate" button: new seed, full engine run.
 - "Update tile" button: style-param-only (size/colors), scales & recolors without regenerating.
 - Confirm dialog: "Generate new / Update tile / Cancel" when switching intent.
-- Tests: polygon count/coverage preserved under scale+recolor.
+- Tests: polygon count/coverage preserved under scale+recolor; Update-enable state logic.
 
 ---
 

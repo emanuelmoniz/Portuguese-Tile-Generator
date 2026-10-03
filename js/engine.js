@@ -363,10 +363,15 @@ var Engine = (function () {
     var groups = best.r.u.map(function (paths) {
       return paths.length ? [paths.map(function (pa) { return pa.map(function (q) { return [q.X / SC, q.Y / SC]; }); })] : [];
     });
+    return { groups: groups, report: makeReport(groups, S, { seed: seed, border: border, fc: fc, mode: best.mode, coverage: cov, percents: p }) };
+  }
+
+  function makeReport(groups, S, o) {
+    var p = o.percents, cov = o.coverage, fc = o.fc, S2 = S * S;
     // allowed mm2: channels/symmetry = numeric noise (+ the 4 open tile corners); features also = pointed petal tips
     var an = CK.analyze(groups, S), eps = 1 + 1e-4 * S2, epsTips = 1 + 0.01 * S2;
     var report = {
-      seed: seed, sizeMm: S, border: border, frameColor: fc < 0 ? 'auto' : fc + 1, mode: best.mode,
+      seed: o.seed, sizeMm: S, border: o.border, frameColor: fc < 0 ? 'auto' : fc + 1, mode: o.mode,
       coverage: { target: cov, achieved: an.coverage },
       shares: p.map(function (x, k) { return { target: x, achieved: an.shares[k] }; }),
       thinFeatures: sum(an.thinFeatures), thinChannels: an.thinChannels, overlap: an.overlap, symmetry: an.symmetry.max,
@@ -379,10 +384,27 @@ var Engine = (function () {
     if (report.thinFeatures > epsTips) report.warnings.push('features');
     if (an.symmetry.max > eps) report.warnings.push('symmetry');
     if (an.overlap > eps / 10) report.warnings.push('overlap');
-    return { groups: groups, report: report };
+    return report;
   }
 
-  return { generate: generate, mulberry32: mulberry32 };
+  // "Update tile": same design at a new size. groups = shapes (ring | array of rings), ring = [[x, y], ...]
+  function scaleGroups(groups, k) {
+    var sc = function (a) { return typeof a[0] === 'number' ? [a[0] * k, a[1] * k] : a.map(sc); };
+    return sc(groups);
+  }
+  function rescale(res, newSizeMm) {
+    var r = res.report, groups = scaleGroups(res.groups, newSizeMm / r.sizeMm);
+    return { groups: groups, report: makeReport(groups, newSizeMm, { seed: r.seed, border: r.border, fc: r.frameColor === 'auto' ? -1 : r.frameColor - 1, mode: r.mode, coverage: r.coverage.target, percents: r.shares.map(function (s) { return s.target; }) }) };
+  }
+
+  // form params that differ from the last generated ones (keys of a, compared by value)
+  var STYLE = ['sizeMm', 'colors'];
+  function changedParams(last, cur) {
+    return Object.keys(last).filter(function (k) { return JSON.stringify(last[k]).toLowerCase() !== JSON.stringify(cur[k]).toLowerCase(); });
+  }
+  function isStyleOnly(keys) { return keys.every(function (k) { return STYLE.indexOf(k) >= 0; }); }
+
+  return { generate: generate, rescale: rescale, changedParams: changedParams, isStyleOnly: isStyleOnly, mulberry32: mulberry32 };
 })();
 
 if (typeof module !== 'undefined') module.exports = Engine;

@@ -103,6 +103,22 @@ function inGroup(shapes, x, y) {
 });
 assert.strictEqual(Engine.generate({ seed: 7, sizeMm: 60, colors: COLORS, percents: [34, 33, 33], coverage: 60, border: 'off', frameColor: 2 }).report.frameColor, 'auto');
 
+// ---- Update tile: scale keeps polygon count + coverage; style-only state logic ----
+RESULTS.forEach(({ name, groups, r }) => {
+  const up = Engine.rescale({ groups, report: r }, r.sizeMm * 1.5);
+  assert.strictEqual(JSON.stringify(up.groups).match(/\]\],\[\[/g)?.length, JSON.stringify(groups).match(/\]\],\[\[/g)?.length, name + ' polygon count');
+  assert.deepStrictEqual(up.groups.map(g => g.length), groups.map(g => g.length), name + ' shapes per group');
+  assert(Math.abs(up.report.coverage.achieved - r.coverage.achieved) < 0.01, name + ' coverage after scale');
+  assert.strictEqual(up.report.seed, r.seed);
+});
+{
+  const last = { sizeMm: 60, colors: ['#ffffff', '#1d4e9e'], percents: [100], coverage: 60, border: 'on', frameColor: 'auto' };
+  const style = x => Engine.isStyleOnly(Engine.changedParams(last, { ...last, ...x }));
+  assert(style({ sizeMm: 80 }) && style({ colors: ['#ffffff', '#1D4E9F'] }) && style({}));
+  assert(!style({ coverage: 50 }) && !style({ sizeMm: 80, border: 'off' }) && !style({ percents: [50, 50] }) && !style({ frameColor: '1' }));
+  assert(style({ coverage: 60 }), 'changed back to generated value re-enables');
+}
+
 // ---- 3D: every mesh watertight (each directed edge once, reverse once), positive volume, volume matches analytics ----
 const Mesh = require('../js/mesh3mf.js'), fflate = require('../vendor/fflate.min.js');
 function check3d(label, groups, colors, size, opts, coverage) {
