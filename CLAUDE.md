@@ -69,10 +69,10 @@ After adding Tailwind classes: `tools\tailwindcss.exe -i css/input.css -o css/ap
 
 After each commit+push to main:
 1. Update `index.html` footer: 
-   - Date: today's YYYY-MM-DD.
+   - Year: the current year, set automatically by `js/app.js` (never edit by hand).
    - Version: bump minor (e.g., 1.0.0 → 1.1.0 for P6a) if a phase is complete; otherwise keep it.
 2. Update `CHANGELOG.md`: add an entry under the current version with today's date and commit link.
    Format: `- [YYYY-MM-DD] description of change(s). [commit](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/HASH)`
    Example: `- [2026-10-05] P6a: favicon, footer, branding. [aef4027](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/aef4027)`
 
-Keep the footer date, version, and CHANGELOG.md synchronized. Phase prompts in `plan_v2.md` specify exact version bumps.
+Keep the footer version and CHANGELOG.md synchronized. Phase prompts in `plan_v2.md` specify exact version bumps.

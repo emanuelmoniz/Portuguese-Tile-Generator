@@ -356,6 +356,6 @@
 
   // Footer initialization
   var d = new Date();
-  $('footerDate').textContent = '2026-10-03';
+  $('footerDate').textContent = d.getFullYear();
   $('footerVersion').textContent = 'v1.4.0';
 })();

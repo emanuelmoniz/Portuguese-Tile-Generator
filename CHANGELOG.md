@@ -39,10 +39,10 @@ Format: [Semantic Versioning](https://semver.org/) — v[major].[minor].[patch].
 
 - Favicon: 2-color (#1d4e9e + white) tile SVG, linked in `<head>`.
 - Header: Tile SVG logo (48px) next to title.
-- Footer: Date | Version (v1.1.0) | "by AZSeashell" link | GitHub link. Centered, subtle border-top, dark-aware.
+- Footer: Year | Version (v1.1.0) | "by AZSeashell" link | GitHub link. Centered, subtle border-top, dark-aware.
 - New sections: "About" (description) + "Instructions" (workflow bullets), EN+PT via i18n.
 - CSS: Added `mb-6`, `leading-relaxed`, `underline`, `text-slate-3xx`, hover states for footer links.
-- Footer init: app.js sets date (YYYY-MM-DD) and version on page load.
+- Footer init: app.js sets the current year and version on page load.
 - [15f901a](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/15f901a)
 
 ---
@@ -103,9 +103,9 @@ Format: [Semantic Versioning](https://semver.org/) — v[major].[minor].[patch].
 ## Maintenance
 
 **After each commit+push to main:**
-1. Update `index.html` footer: date (YYYY-MM-DD), version (semver).
+1. Update `index.html` footer version (semver; the year is automatic).
 2. Update `CHANGELOG.md`: add entry under the current version.
    - Format: `- [YYYY-MM-DD] description. [commit](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/HASH)`
    - Example: `- [2026-10-05] P6a: footer, favicon, branding. [aef4027](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/aef4027)`
 
-Keep footer date, version, and changelog synchronized. See CLAUDE.md "Maintenance" for details.
+Keep footer version and changelog synchronized. See CLAUDE.md "Maintenance" for details.
