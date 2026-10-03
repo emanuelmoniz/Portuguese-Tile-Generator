@@ -2,3 +2,5 @@ tools/
 node_modules/
 test/out/
 __pycache__/
+plan*.md
+_changes.md
