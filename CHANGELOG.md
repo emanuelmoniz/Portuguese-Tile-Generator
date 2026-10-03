@@ -55,6 +55,7 @@ Format: [Semantic Versioning](https://semver.org/) — v[major].[minor].[patch].
 - Engine: pins frame group to chosen color in color-assignment search.
 - Tests: frame ring entirely in chosen color's group.
 - Warning `frameColorConflict` when the pinned frame color misses its share.
+- [2026-10-03] P6b: frame color parameter, form selector, engine support. [f873be8](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/f873be8)
 
 ---
 
