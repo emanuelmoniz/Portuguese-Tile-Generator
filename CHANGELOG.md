@@ -43,7 +43,7 @@ Format: [Semantic Versioning](https://semver.org/) — v[major].[minor].[patch].
 - New sections: "About" (description) + "Instructions" (workflow bullets), EN+PT via i18n.
 - CSS: Added `mb-6`, `leading-relaxed`, `underline`, `text-slate-3xx`, hover states for footer links.
 - Footer init: app.js sets date (YYYY-MM-DD) and version on page load.
-- [commit](#)
+- [15f901a](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/15f901a)
 
 ---
 
