@@ -13,7 +13,15 @@ var I18N = {
     saveSvg: 'Save SVG', savePng: 'Save PNG', settings3d: '3D settings...',
     gen3mf: 'Generate 3MF', save3mf: 'Save 3MF', saveBundle: 'Save bundle (.zip)', clear: 'Clear all',
     dlg3d: '3D settings', close: 'Close',
-    themeToggle: 'Toggle dark/light', langToggle: 'Language'
+    themeToggle: 'Toggle dark/light', langToggle: 'Language',
+    errHex: 'Use a hex color like #1d4e9e.', errSize: 'Tile size must be 15-200 mm.',
+    errCoverage: 'Coverage must be 30-90 %.', errPct: 'Shares must be 0-100 and sum to 100 (now {0}).',
+    rCoverage: 'Coverage', rTarget: 'target', rShares: 'Share of raised area', rMode: 'Layout', rBorder: 'Border frame',
+    rSeed: 'Seed', yes: 'yes', no: 'no',
+    wcoverage: 'Coverage is outside the ±5% tolerance.', wshares: 'A color share is outside the ±5% tolerance.',
+    wchannels: 'Some base-color channels are narrower than 1.5 mm.', wfeatures: 'Some raised features are thinner than 1.0 mm.',
+    wsymmetry: 'The design is not perfectly symmetric.', woverlap: 'Raised colors overlap.',
+    wfail: 'Generation failed: {0}'
   },
   pt: {
     title: 'Gerador de Azulejos Portugueses',
@@ -29,7 +37,15 @@ var I18N = {
     saveSvg: 'Guardar SVG', savePng: 'Guardar PNG', settings3d: 'Definições 3D...',
     gen3mf: 'Gerar 3MF', save3mf: 'Guardar 3MF', saveBundle: 'Guardar pacote (.zip)', clear: 'Limpar tudo',
     dlg3d: 'Definições 3D', close: 'Fechar',
-    themeToggle: 'Alternar escuro/claro', langToggle: 'Idioma'
+    themeToggle: 'Alternar escuro/claro', langToggle: 'Idioma',
+    errHex: 'Use uma cor hex como #1d4e9e.', errSize: 'O tamanho tem de ser 15-200 mm.',
+    errCoverage: 'A cobertura tem de ser 30-90 %.', errPct: 'As partes têm de ser 0-100 e somar 100 (agora {0}).',
+    rCoverage: 'Cobertura', rTarget: 'objetivo', rShares: 'Parte da área em relevo', rMode: 'Composição', rBorder: 'Moldura',
+    rSeed: 'Semente', yes: 'sim', no: 'não',
+    wcoverage: 'A cobertura está fora da tolerância de ±5%.', wshares: 'A parte de uma cor está fora da tolerância de ±5%.',
+    wchannels: 'Alguns canais da cor base são mais estreitos que 1,5 mm.', wfeatures: 'Alguns elementos em relevo são mais finos que 1,0 mm.',
+    wsymmetry: 'O desenho não é perfeitamente simétrico.', woverlap: 'As cores em relevo sobrepõem-se.',
+    wfail: 'Falha ao gerar: {0}'
   }
 };
 if (typeof module !== 'undefined') module.exports = I18N;
