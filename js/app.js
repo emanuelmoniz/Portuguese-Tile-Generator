@@ -160,9 +160,17 @@
   }
 
   // style-only change: same shapes, new size and colors; 3MF must be regenerated
+  var importing = false; // import runs generate/updateTile itself and keeps its text
+  function clearImport() {
+    if (importing) return;
+    $('importText').value = $('importFile').value = '';
+    $('importMsg').innerHTML = '';
+  }
+
   function updateTile() {
     var p = validate();
     if (!p || !lastGenerated) return;
+    clearImport();
     var res = Engine.rescale({ groups: tile.groups, report: tile.report }, p.sizeMm);
     if (tile.report.border && lastGenerated.frameColor !== p.frameColor) res = Engine.reframe(res, p.frameColor);
     tile = { groups: res.groups, report: res.report, colors: p.colors, svg: svgString(res.groups, p.colors, p.sizeMm), gen: tile.gen };
@@ -189,6 +197,7 @@
   function generate(seed) { // seed: only when re-creating an imported design
     var p = validate();
     if (!p) return;
+    clearImport();
     try {
       var fc = p.border === 'off' || p.frameColor === 'auto' ? 'auto' : p.frameColor;
       var res = Engine.generate({ seed: seed, sizeMm: p.sizeMm, colors: p.colors, percents: p.percents, coverage: p.coverage, border: p.border, frameColor: fc });
@@ -311,11 +320,12 @@
     $('border').value = sp.border;
     $('frameColor').value = String(sp.frameColor);
     syncFrame();
+    importing = true;
     $('size').value = d.generatedSizeMm; // regenerate at the size the engine ran at, then restyle
     generate(d.seed);
+    if (tile) { $('size').value = d.sizeMm; updateTile(); }
+    importing = false;
     if (!tile) return importMsg([['errField', 'design']], r.warnings);
-    $('size').value = d.sizeMm;
-    updateTile();
     importMsg([], r.warnings, true);
   }
   $('exportJson').onclick = function () { save(new Blob([exportText()], { type: 'application/json' }), 'json'); };
