@@ -60,3 +60,12 @@ Save buttons stay disabled until their file exists. No 3D preview (2D only, for 
 ### Rebuild css
 After adding Tailwind classes: `tools\tailwindcss.exe -i css/input.css -o css/app.css --minify`
 (standalone CLI v4 from github.com/tailwindlabs/tailwindcss/releases, `tailwindcss-windows-x64.exe` saved as `tools/tailwindcss.exe`).
+
+### Maintenance: Footer and Changelog
+After each commit+push to main:
+1. Update `index.html` footer: change the date to today's YYYY-MM-DD, increment version if features changed (semantic versioning).
+2. Update `CHANGELOG.md`: add a new entry under the current version (or create a new version entry if version bumped).
+   Format: `- [YYYY-MM-DD] description of change(s)` with a link to the commit hash on GitHub for traceability.
+   Example: `- [2026-10-05] P6a: add footer, favicon, branding. [aef4027](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/aef4027)`
+
+This is a manual step (no automation); keep the footer date, version, and changelog synchronized.
