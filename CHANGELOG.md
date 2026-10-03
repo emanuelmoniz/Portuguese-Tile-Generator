@@ -100,7 +100,7 @@ Format: [Semantic Versioning](https://semver.org/) — v[major].[minor].[patch].
 
 **P6a–P6e complete.** Branding, frame color, Generate/Update flow, JSON export/import, and the full test suite.
 
-- [2026-10-03] Version bump to 2.0.0 (footer, engineVersion). HASH
+- [2026-10-03] Version bump to 2.0.0 (footer, engineVersion). [2bd2801](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/2bd2801)
 
 ---
 
