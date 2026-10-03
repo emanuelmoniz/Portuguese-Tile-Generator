@@ -62,10 +62,17 @@ After adding Tailwind classes: `tools\tailwindcss.exe -i css/input.css -o css/ap
 (standalone CLI v4 from github.com/tailwindlabs/tailwindcss/releases, `tailwindcss-windows-x64.exe` saved as `tools/tailwindcss.exe`).
 
 ### Maintenance: Footer and Changelog
-After each commit+push to main:
-1. Update `index.html` footer: change the date to today's YYYY-MM-DD, increment version if features changed (semantic versioning).
-2. Update `CHANGELOG.md`: add a new entry under the current version (or create a new version entry if version bumped).
-   Format: `- [YYYY-MM-DD] description of change(s)` with a link to the commit hash on GitHub for traceability.
-   Example: `- [2026-10-05] P6a: add footer, favicon, branding. [aef4027](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/aef4027)`
+**Versioning strategy:** Semantic versioning (major.minor.patch). Each phase bumps the minor version:
+- v1.0.0: P0–P5 (initial release, complete).
+- v1.1.0 – v1.5.0: P6a–P6e (one per phase).
+- v2.0.0: After P6e complete.
 
-This is a manual step (no automation); keep the footer date, version, and changelog synchronized.
+After each commit+push to main:
+1. Update `index.html` footer: 
+   - Date: today's YYYY-MM-DD.
+   - Version: bump minor (e.g., 1.0.0 → 1.1.0 for P6a) if a phase is complete; otherwise keep it.
+2. Update `CHANGELOG.md`: add an entry under the current version with today's date and commit link.
+   Format: `- [YYYY-MM-DD] description of change(s). [commit](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/HASH)`
+   Example: `- [2026-10-05] P6a: favicon, footer, branding. [aef4027](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/aef4027)`
+
+Keep the footer date, version, and CHANGELOG.md synchronized. Phase prompts in `plan_v2.md` specify exact version bumps.

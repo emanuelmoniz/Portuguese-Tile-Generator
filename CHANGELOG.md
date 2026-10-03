@@ -1,83 +1,103 @@
 # Changelog
 
 All notable changes to the Portuguese Tile Generator are documented here.
-The format follows [Semantic Versioning](https://semver.org/).
+Format: [Semantic Versioning](https://semver.org/) — v[major].[minor].[patch].
+
+---
 
 ## [1.0.0] – 2026-10-03
 
-Initial public release.
+**Initial public release** (Phases P0–P5 complete).
 
-### Features
-- **Design Engine**: Generates Portuguese azulejo-style square tiles with D4 (four-fold rotational) symmetry using a seeded, tuned layout algorithm.
-- **SVG & PNG Export**: Save vector designs (SVG) and raster previews (PNG 1200×1200 px).
-- **3D Export (3MF)**: Multi-color 3D models with emboss or inlay modes. Includes Bambu Studio / Orca Slicer metadata for automatic filament assignment.
-- **Customization**:
-  - Tile size: 15–200 mm (square).
-  - 2–4 colors with independent percentage control.
-  - Coverage target: 30–90% (±5% tolerance).
-  - Border frame: on, off, or random.
-  - 3D settings: emboss depth (0–5 mm) or inlay (0 mm, 0.6 mm depth), plate thickness (1–10 mm).
-- **UI Features**:
-  - Live preview on canvas.
-  - Coverage & color-share report with warnings for unmet targets.
-  - Seed display and regeneration within the same design.
-  - Light and dark mode toggle (system setting aware, saved to localStorage).
-  - EN + PT (Portuguese) language toggle (saved to localStorage).
-- **Bundle Export**: ZIP file with SVG, PNG, and 3MF together.
-- **Offline**: Works completely offline from `file://` or GitHub Pages; no server required.
-- **Responsive Design**: Mobile-friendly layout with Tailwind CSS.
+### Core Features
+- **Design Engine**: Generates Portuguese azulejo-style square tiles with D4 (four-fold rotational) symmetry via seeded, tuned layout algorithm.
+- **Multi-format Export**: SVG (vector), PNG (1200×1200 px raster), 3MF (multi-color 3D).
+- **3D Modes**: Emboss (raised 0–5 mm) or inlay (recessed 0.6 mm, flush).
+- **Customization**: Tile size (15–200 mm), 2–4 colors with % control, coverage (30–90%), border (on/off/random), 3D thickness (1–10 mm).
+- **UI**: Live canvas preview, coverage report with warnings, seed display, light/dark toggle, EN+PT language toggle, localStorage persistence.
+- **3D Printing**: 3MF includes Bambu Studio / Orca Slicer auto-color metadata; PrusaSlicer / Cura manual assignment.
+- **Bundles**: ZIP export with SVG + PNG + 3MF.
+- **Offline**: Works offline from `file://` or GitHub Pages; no server required.
 
-### Foundation
-- Built from the Portuguese tile design vocabulary and patterns in [132_tile-coasters-set](https://github.com/emanuelmoniz/BEKKAS).
-  Ported tile geometry, motif builders, and layout logic from Python to vanilla JavaScript.
-- Uses vendored libraries: Clipper (polygon boolean & offset), earcut (triangulation), fflate (ZIP).
-- Static site architecture: no build step for users, no framework dependencies.
-
-### Documentation
-- **README.md**: Usage guide, parameters, 3D printing notes (Bambu/Orca, PrusaSlicer, Cura), deployment.
-- **CLAUDE.md**: Technical decisions and architecture notes.
-- **plan.md**: Development phases P0–P5 (completed).
+### Architecture
+- Vanilla JS, no framework, no build step for users.
+- Vendored: Clipper (polygon ops), earcut (triangulation), fflate (ZIP).
+- Tailwind CSS, prebuilt into `css/app.css`.
+- Node.js + Python dev-only (tests, preview).
 
 ### Credits
-- Design and implementation: Emanuel Moniz
+- Design & implementation: Emanuel Moniz
+- Pattern source: [132_tile-coasters-set](https://github.com/emanuelmoniz/BEKKAS)
 - License: MIT, 2026
 - Brand: AZSeashell (https://azseashell.com)
 
 ---
 
-## Future Versions (P6a–P6e, planned)
+## [1.1.0] – *Planned* (Phase P6a – UI Polish & Branding)
 
-### P6a – UI Polish & Branding
-- Favicon and header branding (2-color tile design).
-- Footer with version, date, AZSeashell link, GitHub link.
-- "About" and "Instructions" sections in the UI.
+**Favicon, header branding, footer, About/Instructions sections.**
 
-### P6b – Frame Color
-- User-selectable frame color (per raised color or auto).
-- Engine support for pinning frame color in design generation.
+- Favicon: 2-color (#1d4e9e + white) tile, 16×16 / 32×32.
+- Header: Tile image logo next to title.
+- Footer: Date | Version | "by AZSeashell" link | GitHub link.
+- New sections: "About" (description) + "Instructions" (workflow), EN+PT.
 
-### P6c – Generate/Update Flow
-- New "Generate" button (new seed, full engine run).
-- "Update tile" button for style-param-only changes (preserve seed, scale & recolor).
-- Confirm dialog to disambiguate intent.
+---
 
-### P6d – Export/Import
-- JSON export of tile designs (`tile_<size>mm_seed<seed>.json`).
-- JSON import with deterministic regeneration and round-trip testing.
-- Copy-to-clipboard feature for design sharing.
+## [1.2.0] – *Planned* (Phase P6b – Frame Color)
 
-### P6e – Tests & Finalization
-- Extended test suite (8+ new cases covering frame color, update tile, export/import).
-- CHANGELOG maintenance directive in CLAUDE.md.
-- Version 1.0.0 official release marker.
+**User-selectable frame color in designs.**
+
+- "Frame color" form field: Auto, Raised 1, Raised 2, Raised 3 (enabled when border on).
+- Engine: pins frame group to chosen color in color-assignment search.
+- Tests: frame ring entirely in chosen color's group.
+
+---
+
+## [1.3.0] – *Planned* (Phase P6c – Generate/Update Flow)
+
+**Preserve designs while changing size/colors.**
+
+- "Generate" button: new seed, full engine run.
+- "Update tile" button: style-param-only (size/colors), scales & recolors without regenerating.
+- Confirm dialog: "Generate new / Update tile / Cancel" when switching intent.
+- Tests: polygon count/coverage preserved under scale+recolor.
+
+---
+
+## [1.4.0] – *Planned* (Phase P6d – Export/Import)
+
+**Share and restore tile designs via JSON.**
+
+- JSON format: `{format, version, engineVersion, seed, shapeParams, generatedSizeMm, sizeMm, colors}`.
+- UI: "Export design" button (JSON file + copy-to-clipboard).
+- "Generate from export" section: textarea + file picker → import & regenerate.
+- Tests: export→import round-trip gives identical SVG.
+
+---
+
+## [1.5.0] – *Planned* (Phase P6e – Tests & Finalization)
+
+**Comprehensive testing, documentation, version 1.5.0 release.**
+
+- Extended test suite: 8+ new cases (frame color, update tile, export/import).
+- Updated docs: CLAUDE.md user flow, CHANGELOG maintenance notes.
+- Version bump: ready for major v2.0.0 after all P6 phases.
+
+---
+
+## [2.0.0] – *Planned* (After P6e)
+
+**P6 complete.** Minor features + quality refinements → major version.
 
 ---
 
 ## Maintenance
 
-After each commit+push to main:
-1. Update the footer date in `index.html` to today's YYYY-MM-DD.
-2. Increment the version in the footer if features changed (semver).
-3. Add a dated entry to this file under the version with commit hash link.
+**After each commit+push to main:**
+1. Update `index.html` footer: date (YYYY-MM-DD), version (semver).
+2. Update `CHANGELOG.md`: add entry under the current version.
+   - Format: `- [YYYY-MM-DD] description. [commit](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/HASH)`
+   - Example: `- [2026-10-05] P6a: footer, favicon, branding. [aef4027](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/aef4027)`
 
-See CLAUDE.md "Maintenance: Footer and Changelog" for details.
+Keep footer date, version, and changelog synchronized. See CLAUDE.md "Maintenance" for details.
