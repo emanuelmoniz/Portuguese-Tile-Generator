@@ -21,7 +21,12 @@
     var d = I18N[lang];
     root.lang = lang;
     document.querySelectorAll('[data-i18n]').forEach(function (el) {
-      el.textContent = d[el.dataset.i18n];
+      var key = el.dataset.i18n;
+      if (key === 'instructionsList') {
+        el.innerHTML = d[key];
+      } else {
+        el.textContent = d[key];
+      }
     });
     document.querySelectorAll('[data-i18n-title]').forEach(function (el) { el.title = d[el.dataset.i18nTitle]; });
     document.title = d.title;
@@ -250,4 +255,10 @@
 
   setLang(get('lang') || (navigator.language.slice(0, 2) === 'pt' ? 'pt' : 'en'));
   syncRows();
+
+  // Footer initialization
+  var d = new Date();
+  var dateStr = [d.getFullYear(), ('0' + (d.getMonth() + 1)).slice(-2), ('0' + d.getDate()).slice(-2)].join('-');
+  $('footerDate').textContent = dateStr;
+  $('footerVersion').textContent = 'v1.1.0';
 })();

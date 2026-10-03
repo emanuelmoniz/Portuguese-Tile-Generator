@@ -33,14 +33,17 @@ Format: [Semantic Versioning](https://semver.org/) — v[major].[minor].[patch].
 
 ---
 
-## [1.1.0] – *Planned* (Phase P6a – UI Polish & Branding)
+## [1.1.0] – 2026-10-03 (Phase P6a – UI Polish & Branding)
 
 **Favicon, header branding, footer, About/Instructions sections.**
 
-- Favicon: 2-color (#1d4e9e + white) tile, 16×16 / 32×32.
-- Header: Tile image logo next to title.
-- Footer: Date | Version | "by AZSeashell" link | GitHub link.
-- New sections: "About" (description) + "Instructions" (workflow), EN+PT.
+- Favicon: 2-color (#1d4e9e + white) tile SVG, linked in `<head>`.
+- Header: Tile SVG logo (48px) next to title.
+- Footer: Date | Version (v1.1.0) | "by AZSeashell" link | GitHub link. Centered, subtle border-top, dark-aware.
+- New sections: "About" (description) + "Instructions" (workflow bullets), EN+PT via i18n.
+- CSS: Added `mb-6`, `leading-relaxed`, `underline`, `text-slate-3xx`, hover states for footer links.
+- Footer init: app.js sets date (YYYY-MM-DD) and version on page load.
+- [commit](#)
 
 ---
 

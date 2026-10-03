@@ -1,6 +1,10 @@
 var I18N = {
   en: {
     title: 'Portuguese Tile Generator',
+    about: 'About',
+    aboutText: 'Generate unique Portuguese azulejo-style square tiles for 3D printing. Customize colors, coverage, and patterns, then export as SVG, PNG, or 3MF for multi-color printing.',
+    instructions: 'Instructions',
+    instructionsList: '<li>• Set tile size and colors</li><li>• Adjust coverage and border frame</li><li>• Click Generate to create a new design</li><li>• Preview the tile and view the report</li><li>• Save as SVG or PNG</li><li>• Optionally configure 3D settings (emboss/inlay, plate thickness)</li><li>• Export the 3MF file for 3D printing</li><li>• Save the bundle (.zip) with all files</li>',
     params: 'Tile parameters',
     size: 'Tile size (mm)', sizeHint: '15-200, square',
     colors: 'Colors (base + 1-3 raised)', numColors: 'Number of colors',
@@ -28,6 +32,10 @@ var I18N = {
   },
   pt: {
     title: 'Gerador de Azulejos Portugueses',
+    about: 'Sobre',
+    aboutText: 'Gere azulejos quadrados únicos com o estilo português azulejo para impressão 3D. Personalize cores, cobertura e padrões, depois exporte como SVG, PNG ou 3MF para impressão multi-cor.',
+    instructions: 'Instruções',
+    instructionsList: '<li>• Defina o tamanho do azulejo e as cores</li><li>• Ajuste a cobertura e a moldura da borda</li><li>• Clique em Gerar para criar um novo design</li><li>• Pré-visualize o azulejo e veja o relatório</li><li>• Guarde em SVG ou PNG</li><li>• Configure opcionalmente as definições 3D (relevo/embutido, espessura da placa)</li><li>• Exporte o ficheiro 3MF para impressão 3D</li><li>• Guarde o pacote (.zip) com todos os ficheiros</li>',
     params: 'Parâmetros do azulejo',
     size: 'Tamanho do azulejo (mm)', sizeHint: '15-200, quadrado',
     colors: 'Cores (base + 1-3 em relevo)', numColors: 'Número de cores',
