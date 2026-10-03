@@ -161,3 +161,7 @@ Keep footer version and changelog synchronized. See CLAUDE.md "Maintenance" for 
 - Docs: CLAUDE.md versioning, README features and three.js credit; `_changes.md` removed (now in plan_v3.md).
 - [2026-10-03] v3.0.0: P7 complete (shape limits, 3D viewer, redesign). [047fecf](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/047fecf)
 
+
+## [3.1.0] – 2026-10-03 (Phase P8a)
+
+- [2026-10-03] P8a: new defaults (100 mm, 45%, #A3D8E1/#F7D959/#F99963), "figure colors" and "Design parameters" labels, CSS loader over the preview. [477be28](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/477be28)
