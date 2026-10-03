@@ -92,7 +92,7 @@ Format: [Semantic Versioning](https://semver.org/) — v[major].[minor].[patch].
 - Docs: CLAUDE.md user flow updated for P6 features.
 - engineVersion and footer bumped to 1.5.0.
 - Based on Portuguese tile patterns from the source project (132_tile-coasters-set).
-- [2026-10-03] P6e: comprehensive test suite, version 1.5.0, P6 finalization. HASH
+- [2026-10-03] P6e: comprehensive test suite, version 1.5.0, P6 finalization. [3436718](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/3436718)
 
 ---
 
@@ -107,7 +107,7 @@ Format: [Semantic Versioning](https://semver.org/) — v[major].[minor].[patch].
 **After each commit+push to main:**
 1. Update `index.html` footer version (semver; the year is automatic).
 2. Update `CHANGELOG.md`: add entry under the current version.
-   - Format: `- [YYYY-MM-DD] description. [commit](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/HASH)`
+   - Format: `- [YYYY-MM-DD] description. [commit](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/[3436718](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/3436718))`
    - Example: `- [2026-10-05] P6a: footer, favicon, branding. [aef4027](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/aef4027)`
 
 Keep footer version and changelog synchronized. See CLAUDE.md "Maintenance" for details.
