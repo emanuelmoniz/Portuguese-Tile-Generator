@@ -258,9 +258,6 @@
 
   // Footer initialization
   var d = new Date();
-  var year = d.getFullYear();
-  var month = String(d.getMonth() + 1).padStart(2, '0');
-  var day = String(d.getDate()).padStart(2, '0');
-  $('footerDate').textContent = year + '-' + month + '-' + day;
+  $('footerDate').textContent = d.getFullYear();
   $('footerVersion').textContent = 'v1.1.0';
 })();
