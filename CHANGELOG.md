@@ -134,3 +134,11 @@ Format: [Semantic Versioning](https://semver.org/) — v[major].[minor].[patch].
    - Example: `- [2026-10-05] P6a: footer, favicon, branding. [1f3cb22](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/1f3cb22)`
 
 Keep footer version and changelog synchronized. See CLAUDE.md "Maintenance" for details.
+
+---
+
+## [2.2.0] – 2026-10-03 (Phase P7b – 3D viewer)
+
+- "3D settings..." button renamed **Generate 3D**; after generating, the preview switches to an interactive 3D view (orbit, zoom, Reset view) with a 2D / 3D toggle.
+- three.js r147 + OrbitControls vendored (works offline / from file://).
+- [2026-10-03] P7b: Generate 3D button, three.js 3D viewer. [d5959fe](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/d5959fe)
