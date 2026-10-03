@@ -95,12 +95,21 @@
             <option value="1"></option><option value="2"></option><option value="3"></option>
           </select>
         </label></div>
-        <div class="flex items-baseline gap-2 border-t border-line pt-3 text-sm md:col-span-2 lg:col-span-1">
-          <span class="text-muted" data-i18n="seed"></span> <output id="seed" class="font-semibold tabular-nums">-</output>
-        </div>
         <div class="flex flex-wrap gap-2 md:col-span-2 lg:col-span-1">
           <button id="generate" type="button" data-i18n="generate" class="btn btn-primary flex-1"></button>
           <button id="update" type="button" data-i18n="update" disabled class="btn flex-1"></button>
+        </div>
+        <div class="space-y-4 border-t border-line pt-3 md:col-span-2 lg:col-span-1">
+          <h3 class="font-display text-lg font-bold" data-i18n="params3d"></h3>
+          <label class="block text-sm font-medium"><span data-i18n="emboss"></span> <span class="block font-normal text-muted" data-i18n="embossHint"></span>
+            <input id="emboss" type="number" min="0" max="5" step="0.01" value="0.05" inputmode="decimal" class="field" />
+          </label>
+          <p data-err="emboss" class="text-sm text-manganes"></p>
+          <label class="block text-sm font-medium"><span data-i18n="plate"></span> <span class="font-normal text-muted" data-i18n="plateHint"></span>
+            <input id="plate" type="number" min="1" max="10" step="0.1" value="3" inputmode="decimal" class="field" />
+          </label>
+          <p data-err="plate" class="text-sm text-manganes"></p>
+          <button id="open3d" type="button" disabled data-i18n="settings3d" class="btn btn-primary w-full"></button>
         </div>
       </form>
     </section>
@@ -143,7 +152,6 @@
         <div>
           <h3 class="mb-2 font-display text-lg font-bold" data-i18n="files3d"></h3>
           <div class="flex flex-wrap gap-2">
-            <button id="open3d" type="button" disabled data-i18n="settings3d" class="btn"></button>
             <button id="save3mf" type="button" disabled data-i18n="save3mf" class="btn"></button>
             <button id="saveBundle" type="button" disabled data-i18n="saveBundle" class="btn"></button>
           </div>
@@ -177,24 +185,6 @@
   <footer class="mt-8 border-t border-line px-4 py-5 text-center text-sm text-muted">
     <span id="footerDate"></span> | <span id="footerVersion"></span> | by <a href="https://azseashell.com" class="underline decoration-line underline-offset-2 hover:text-cobalt">AZSeashell</a> | <a href="https://github.com/emanuelmoniz/Portuguese-Tile-Generator" class="underline decoration-line underline-offset-2 hover:text-cobalt">GitHub</a>
   </footer>
-
-  <dialog id="dlg3d" class="dlg w-[22rem]">
-    <h2 class="font-display text-2xl font-bold" data-i18n="dlg3d"></h2>
-    <form id="form3d" method="dialog" class="mt-4 space-y-4">
-      <label class="block text-sm font-medium"><span data-i18n="emboss"></span> <span class="block font-normal text-muted" data-i18n="embossHint"></span>
-        <input id="emboss" type="number" min="0" max="5" step="0.01" value="0.05" inputmode="decimal" class="field" />
-      </label>
-      <p data-err="emboss" class="text-sm text-manganes"></p>
-      <label class="block text-sm font-medium"><span data-i18n="plate"></span> <span class="font-normal text-muted" data-i18n="plateHint"></span>
-        <input id="plate" type="number" min="1" max="10" step="0.1" value="3" inputmode="decimal" class="field" />
-      </label>
-      <p data-err="plate" class="text-sm text-manganes"></p>
-      <div class="flex flex-wrap gap-2">
-        <button id="gen3mf" type="submit" data-i18n="gen3mf" class="btn btn-primary flex-1"></button>
-        <button id="cancel3d" type="button" data-i18n="cancel" class="btn flex-1"></button>
-      </div>
-    </form>
-  </dialog>
 
   <dialog id="dlgUpdate" class="dlg w-[26rem]">
     <h2 class="font-display text-2xl font-bold" data-i18n="dlgUpdate"></h2>

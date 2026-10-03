@@ -11,7 +11,6 @@
 
   var tile = null;      // { groups, report, colors, svg } of the current design
   var errors = {};      // field id -> [i18n key, ...args]
-  var s3d = { emboss: 1, plate: 3 };  // last confirmed 3D settings (mm)
   var lastGenerated = null;           // form params of the last generated tile
 
   function setTheme(dark) {
@@ -140,7 +139,7 @@
 
   function render3d() {
     var el = $('info3d');
-    el.textContent = tile ? t('info3d', s3d.emboss, s3d.plate) + (tile.mf ? ' · ' + t('info3dReady', tile.mf.parts.length, tile.mf.tris) : '') : '';
+    el.textContent = tile && tile.mf ? t('info3dReady', tile.mf.parts.length, tile.mf.tris) : '';
   }
 
   // 2D canvas, 3D viewer or the empty hint; 3D only while a 3MF exists
@@ -167,7 +166,6 @@
   }
 
   function show() {
-    $('seed').textContent = tile.report.seed;
     draw($('preview'), tile.groups, tile.colors, tile.report.sizeMm);
     renderReport();
     setButtons();
@@ -248,9 +246,6 @@
   function clearAll() {
     tile = lastGenerated = null;
     $('params').reset();
-    $('form3d').reset();
-    s3d = { emboss: 1, plate: 3 };
-    $('seed').textContent = '-';
     syncRows();
     renderReport();
     setButtons();
@@ -266,34 +261,21 @@
     return errors.emboss || errors.plate ? null : { emboss: e, plate: p };
   }
 
-  function open3d() {
-    $('emboss').value = s3d.emboss;
-    $('plate').value = s3d.plate;
-    validate3d();
-    $('dlg3d').showModal();
-  }
-
-  function gen3mf(ev) {
-    ev.preventDefault();
+  function gen3mf() {
     var o = validate3d();
-    if (!o) return;
-    $('dlg3d').close();
-    busy(function () { run3mf(o); });
+    if (o) busy(function () { run3mf(o); });
   }
 
   function run3mf(o) {
     try {
       var r = Mesh3mf.generate(tile.groups, tile.colors, tile.report.sizeMm, o);
-      s3d = o;
       tile.mf = { bytes: r.bytes, parts: r.parts, tris: r.parts.reduce(function (n, p) { return n + p.mesh.t.length / 3; }, 0) };
     } catch (e) {
       tile.mf = null;
       $('info3d').textContent = t('wfail3d', e.message);
-      $('dlg3d').close();
       setButtons();
       return;
     }
-    $('dlg3d').close();
     setButtons();
     view('3d');
     Viewer.show($('view3d'), tile.mf.parts, tile.colors, tile.report.sizeMm);
@@ -384,12 +366,10 @@
   $('saveSvg').onclick = function () { save(new Blob([tile.svg], { type: 'image/svg+xml' }), 'svg'); };
   $('savePng').onclick = function () { var n = baseName(tile); $('preview').toBlob(function (b) { save(b, 'png', n); }, 'image/png'); };
   ['emboss', 'plate'].forEach(function (id) { $(id).addEventListener('input', validate3d); });
-  $('open3d').onclick = open3d;
+  $('open3d').onclick = gen3mf;
   $('tab2d').onclick = function () { view('2d'); };
   $('tab3d').onclick = function () { view('3d'); };
   $('resetView').onclick = Viewer.reset;
-  $('form3d').onsubmit = gen3mf;
-  $('cancel3d').onclick = function () { $('dlg3d').close(); };
   $('save3mf').onclick = function () { save(new Blob([tile.mf.bytes], { type: 'model/3mf' }), '3mf'); };
   $('saveBundle').onclick = function () {
     var t = tile, n = baseName(t);
@@ -412,5 +392,5 @@
   // Footer initialization
   var d = new Date();
   $('footerDate').textContent = d.getFullYear();
-  $('footerVersion').textContent = 'v3.1.0';
+  $('footerVersion').textContent = 'v3.2.0';
 })();
