@@ -8,7 +8,7 @@
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
 </head>
 <body class="flex min-h-screen flex-col font-sans text-base leading-normal antialiased">
-  <header>
+  <header class="wall">
     <div class="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 pt-5 pb-4">
       <div class="plaque flex min-w-0 items-center gap-3 py-2 pr-4 pl-2.5 sm:gap-4 sm:py-2.5 sm:pr-6 sm:pl-3">
         <img src="tile.svg" alt="" class="h-9 w-9 flex-none sm:h-11 sm:w-11" />
@@ -16,11 +16,11 @@
         <h1 class="font-display text-lg leading-tight font-bold sm:text-[1.75rem]" data-i18n="title"></h1>
       </div>
       <div class="flex flex-none gap-2">
-        <button id="lang-toggle" type="button" data-i18n-title="langToggle" class="btn w-11 px-0 text-sm"></button>
-        <button id="theme-toggle" type="button" data-i18n-title="themeToggle" class="btn w-11 px-0 text-lg">&#9680;</button>
+        <button id="lang-toggle" type="button" data-i18n-title="langToggle" class="btn w-11 bg-glaze px-0 text-sm"></button>
+        <button id="theme-toggle" type="button" data-i18n-title="themeToggle" class="btn w-11 bg-glaze px-0 text-lg">&#9680;</button>
       </div>
     </div>
-    <div class="frieze" aria-hidden="true"></div>
+    <div class="h-[3px] bg-cobalt"></div>
   </header>
 
   <main class="mx-auto w-full max-w-5xl flex-1 px-4 py-6 sm:py-8">
