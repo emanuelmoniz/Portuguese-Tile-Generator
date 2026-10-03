@@ -150,3 +150,4 @@ Keep footer version and changelog synchronized. See CLAUDE.md "Maintenance" for 
 - Two-column workspace on desktop (parameters | preview, report, "2D files" and "3D" action groups); Clear set apart; Import in a collapsible card.
 - Mobile first: no horizontal scroll at 360 px, tap targets ≥ 44 px, 16 px inputs; preview and 3D viewer scale to the column; dialogs fit the screen.
 - About + bullet list replaced by a short intro and a collapsible "How to use" (parameters, Generate vs Update, report, files, 3D, printing), EN + PT.
+- [2026-10-03] P7c: azulejo redesign, responsive layout, expandable instructions. [67d1b6f](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/67d1b6f)
