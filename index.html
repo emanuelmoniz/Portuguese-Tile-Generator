@@ -58,15 +58,15 @@
         <span class="text-sm"><span data-i18n="base"></span></span>
       </div>
       <div id="row1" class="flex items-center gap-3">
-        <input id="color1" type="color" value="#A3D8E1" class="swatch" />
+        <input id="color1" type="color" value="#0078BF" class="swatch" />
         <span class="w-16 text-sm"><span><span data-i18n="raised"></span> 1</span></span><input id="pct1" type="number" min="0" max="100" value="100" inputmode="numeric" class="field mt-0 w-24" />
       </div>
       <div id="row2" class="flex items-center gap-3 hidden">
-        <input id="color2" type="color" value="#F7D959" class="swatch" />
+        <input id="color2" type="color" value="#A3D8E1" class="swatch" />
         <span class="w-16 text-sm"><span><span data-i18n="raised"></span> 2</span></span><input id="pct2" type="number" min="0" max="100" value="0" inputmode="numeric" class="field mt-0 w-24" />
       </div>
       <div id="row3" class="flex items-center gap-3 hidden">
-        <input id="color3" type="color" value="#F99963" class="swatch" />
+        <input id="color3" type="color" value="#FEC600" class="swatch" />
         <span class="w-16 text-sm"><span><span data-i18n="raised"></span> 3</span></span><input id="pct3" type="number" min="0" max="100" value="0" inputmode="numeric" class="field mt-0 w-24" />
       </div>
         </fieldset>
@@ -100,16 +100,16 @@
           <button id="update" type="button" data-i18n="update" disabled class="btn flex-1"></button>
         </div>
         <div class="space-y-4 border-t border-line pt-3 md:col-span-2 lg:col-span-1">
-          <h3 class="font-display text-lg font-bold" data-i18n="params3d"></h3>
+          <h2 class="font-display text-2xl font-bold" data-i18n="params3d"></h2>
           <label class="block text-sm font-medium"><span data-i18n="emboss"></span> <span class="block font-normal text-muted" data-i18n="embossHint"></span>
-            <input id="emboss" type="number" min="0" max="5" step="0.01" value="0.05" inputmode="decimal" class="field" />
+            <input id="emboss" type="number" min="0" max="5" step="0.01" value="0.6" inputmode="decimal" class="field" />
           </label>
           <p data-err="emboss" class="text-sm text-manganes"></p>
           <label class="block text-sm font-medium"><span data-i18n="plate"></span> <span class="font-normal text-muted" data-i18n="plateHint"></span>
             <input id="plate" type="number" min="1" max="10" step="0.1" value="3" inputmode="decimal" class="field" />
           </label>
           <p data-err="plate" class="text-sm text-manganes"></p>
-          <button id="open3d" type="button" disabled data-i18n="settings3d" class="btn btn-primary w-full"></button>
+          <button id="open3d" type="button" disabled data-i18n="settings3d" class="btn w-full"></button>
         </div>
       </form>
     </section>
