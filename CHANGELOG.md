@@ -159,5 +159,5 @@ Keep footer version and changelog synchronized. See CLAUDE.md "Maintenance" for 
 - P7 summary: shape-size limits (P7a, 0.05%-35% per island), 3D viewer with 2D/3D toggle (P7b), azulejo redesign, responsive layout, expandable instructions (P7c).
 - Fix: Save bundle / Save PNG no longer throw when Clear or Update tile runs before the PNG is ready (state captured before the async step).
 - Docs: CLAUDE.md versioning, README features and three.js credit; `_changes.md` removed (now in plan_v3.md).
-- [2026-10-03] v3.0.0: P7 complete (shape limits, 3D viewer, redesign). [COMMIT](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/COMMIT)
+- [2026-10-03] v3.0.0: P7 complete (shape limits, 3D viewer, redesign). [047fecf](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/047fecf)
 
