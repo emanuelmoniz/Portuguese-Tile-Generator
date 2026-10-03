@@ -3,7 +3,7 @@
 var Viewer = (function () {
   var S = null; // { r, scene, cam, ctl, canvas, dist }
 
-  function bg(dark) { return dark ? 0x0f172a : 0xf8fafc; }
+  function bg(dark) { return dark ? 0x0d1a30 : 0xf3f6f9; } // = --glaze in css/input.css
   function render() { if (S) S.r.render(S.scene, S.cam); }
 
   function resize() {

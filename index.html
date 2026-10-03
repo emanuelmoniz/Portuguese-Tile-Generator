@@ -7,161 +7,201 @@
   <link rel="stylesheet" href="css/app.css" />
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
 </head>
-<body class="flex flex-col min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-100">
-  <header class="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-700">
-    <div class="flex items-center gap-3">
-      <img src="tile.svg" alt="" class="h-10 w-10" />
-      <h1 class="text-xl font-semibold" data-i18n="title"></h1>
+<body class="flex min-h-screen flex-col font-sans text-base leading-normal antialiased">
+  <header>
+    <div class="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 pt-5 pb-4">
+      <div class="plaque flex min-w-0 items-center gap-3 py-2 pr-4 pl-2.5 sm:gap-4 sm:py-2.5 sm:pr-6 sm:pl-3">
+        <img src="tile.svg" alt="" class="h-9 w-9 flex-none sm:h-11 sm:w-11" />
+        <span class="h-8 w-px flex-none bg-[#1d4e9e] sm:h-10" aria-hidden="true"></span>
+        <h1 class="font-display text-lg leading-tight font-bold sm:text-[1.75rem]" data-i18n="title"></h1>
+      </div>
+      <div class="flex flex-none gap-2">
+        <button id="lang-toggle" type="button" data-i18n-title="langToggle" class="btn w-11 px-0 text-sm"></button>
+        <button id="theme-toggle" type="button" data-i18n-title="themeToggle" class="btn w-11 px-0 text-lg">&#9680;</button>
+      </div>
     </div>
-    <div class="flex gap-2">
-      <button id="lang-toggle" type="button" data-i18n-title="langToggle" class="rounded border border-slate-300 px-3 py-1 text-sm dark:border-slate-600"></button>
-      <button id="theme-toggle" type="button" data-i18n-title="themeToggle" class="rounded border border-slate-300 px-3 py-1 text-sm dark:border-slate-600">&#9680;</button>
-    </div>
+    <div class="frieze" aria-hidden="true"></div>
   </header>
 
-  <main class="flex-1 mx-auto max-w-6xl gap-6 p-4">
-    <section class="space-y-4 mb-6">
-      <h2 class="text-lg font-semibold" data-i18n="about"></h2>
-      <p class="text-sm leading-relaxed text-slate-700 dark:text-slate-300" data-i18n="aboutText"></p>
-      <h2 class="text-lg font-semibold" data-i18n="instructions"></h2>
-      <ul class="space-y-1 text-sm text-slate-700 dark:text-slate-300" data-i18n="instructionsList"></ul>
+  <main class="mx-auto w-full max-w-5xl flex-1 px-4 py-6 sm:py-8">
+    <section class="mb-8 max-w-[68ch]">
+      <p class="text-[1.0625rem] leading-relaxed" data-i18n="intro"></p>
+      <details class="mt-3">
+        <summary class="disclosure inline-flex min-h-11 items-center font-semibold text-cobalt" data-i18n="howTo"></summary>
+        <div class="mt-3 grid gap-x-8 gap-y-5 border-l-2 border-line pl-4 sm:grid-cols-2">
+          <div><h3 class="font-display text-lg font-bold" data-i18n="hParams"></h3><p class="mt-1 text-sm leading-relaxed whitespace-pre-line text-muted" data-i18n="hParamsText"></p></div>
+          <div><h3 class="font-display text-lg font-bold" data-i18n="hGenerate"></h3><p class="mt-1 text-sm leading-relaxed whitespace-pre-line text-muted" data-i18n="hGenerateText"></p></div>
+          <div><h3 class="font-display text-lg font-bold" data-i18n="hReport"></h3><p class="mt-1 text-sm leading-relaxed whitespace-pre-line text-muted" data-i18n="hReportText"></p></div>
+          <div><h3 class="font-display text-lg font-bold" data-i18n="hFiles"></h3><p class="mt-1 text-sm leading-relaxed whitespace-pre-line text-muted" data-i18n="hFilesText"></p></div>
+          <div><h3 class="font-display text-lg font-bold" data-i18n="h3d"></h3><p class="mt-1 text-sm leading-relaxed whitespace-pre-line text-muted" data-i18n="h3dText"></p></div>
+          <div><h3 class="font-display text-lg font-bold" data-i18n="hPrint"></h3><p class="mt-1 text-sm leading-relaxed whitespace-pre-line text-muted" data-i18n="hPrintText"></p></div>
+        </div>
+      </details>
     </section>
 
-    <div class="grid gap-6 md:grid-cols-[22rem_1fr]">
-    <section class="space-y-4">
-      <h2 class="text-lg font-medium" data-i18n="params"></h2>
-      <form id="params" class="space-y-4" onsubmit="return false">
-        <label class="block text-sm"><span data-i18n="size"></span> <span class="text-slate-500" data-i18n="sizeHint"></span>
-          <input id="size" type="number" min="15" max="200" value="60" class="mt-1 block w-full rounded border border-slate-300 bg-white px-2 py-1 dark:border-slate-600 dark:bg-slate-800" />
-        </label>
-        <label class="block text-sm"><span data-i18n="numColors"></span>
-          <select id="numColors" class="mt-1 block w-full rounded border border-slate-300 bg-white px-2 py-1 dark:border-slate-600 dark:bg-slate-800">
+    <div class="grid items-start gap-8 lg:grid-cols-[21rem_minmax(0,1fr)]">
+    <section class="panel p-4 sm:p-5">
+      <h2 class="font-display text-2xl font-bold" data-i18n="params"></h2>
+      <form id="params" class="mt-4 grid gap-4 md:grid-cols-2 md:gap-x-6 lg:grid-cols-1" onsubmit="return false">
+        <div><label class="block text-sm font-medium"><span data-i18n="size"></span> <span class="font-normal text-muted" data-i18n="sizeHint"></span>
+          <input id="size" type="number" min="15" max="200" value="60" inputmode="numeric" class="field" />
+        </label></div>
+        <div><label class="block text-sm font-medium"><span data-i18n="numColors"></span>
+          <select id="numColors" class="field">
             <option>2</option><option>3</option><option>4</option>
           </select>
-        </label>
-        <fieldset class="space-y-2">
-          <legend class="text-sm"><span data-i18n="colors"></span> / <span data-i18n="percent"></span></legend>
+        </label></div>
+        <fieldset class="space-y-2 md:col-span-2 lg:col-span-1">
+          <legend class="mb-1 text-sm font-medium"><span data-i18n="colors"></span> / <span data-i18n="percent"></span></legend>
       <div id="row0" class="flex items-center gap-3">
-        <input id="color0" type="color" value="#f4efe6" class="h-9 w-12 cursor-pointer rounded border border-slate-300 dark:border-slate-600" />
-        <span class="w-20 text-sm"><span data-i18n="base"></span></span>
+        <input id="color0" type="color" value="#f4efe6" class="swatch" />
+        <span class="text-sm"><span data-i18n="base"></span></span>
       </div>
       <div id="row1" class="flex items-center gap-3">
-        <input id="color1" type="color" value="#1d4e9e" class="h-9 w-12 cursor-pointer rounded border border-slate-300 dark:border-slate-600" />
-        <span class="w-20 text-sm"><span><span data-i18n="raised"></span> 1</span></span><input id="pct1" type="number" min="0" max="100" value="100" class="w-20 rounded border border-slate-300 bg-white px-2 py-1 dark:border-slate-600 dark:bg-slate-800" />
+        <input id="color1" type="color" value="#1d4e9e" class="swatch" />
+        <span class="w-16 text-sm"><span><span data-i18n="raised"></span> 1</span></span><input id="pct1" type="number" min="0" max="100" value="100" inputmode="numeric" class="field mt-0 w-24" />
       </div>
       <div id="row2" class="flex items-center gap-3 hidden">
-        <input id="color2" type="color" value="#d9a21b" class="h-9 w-12 cursor-pointer rounded border border-slate-300 dark:border-slate-600" />
-        <span class="w-20 text-sm"><span><span data-i18n="raised"></span> 2</span></span><input id="pct2" type="number" min="0" max="100" value="0" class="w-20 rounded border border-slate-300 bg-white px-2 py-1 dark:border-slate-600 dark:bg-slate-800" />
+        <input id="color2" type="color" value="#d9a21b" class="swatch" />
+        <span class="w-16 text-sm"><span><span data-i18n="raised"></span> 2</span></span><input id="pct2" type="number" min="0" max="100" value="0" inputmode="numeric" class="field mt-0 w-24" />
       </div>
       <div id="row3" class="flex items-center gap-3 hidden">
-        <input id="color3" type="color" value="#2f7d4f" class="h-9 w-12 cursor-pointer rounded border border-slate-300 dark:border-slate-600" />
-        <span class="w-20 text-sm"><span><span data-i18n="raised"></span> 3</span></span><input id="pct3" type="number" min="0" max="100" value="0" class="w-20 rounded border border-slate-300 bg-white px-2 py-1 dark:border-slate-600 dark:bg-slate-800" />
+        <input id="color3" type="color" value="#2f7d4f" class="swatch" />
+        <span class="w-16 text-sm"><span><span data-i18n="raised"></span> 3</span></span><input id="pct3" type="number" min="0" max="100" value="0" inputmode="numeric" class="field mt-0 w-24" />
       </div>
         </fieldset>
-        <label class="block text-sm"><span data-i18n="coverage"></span> <span class="text-slate-500" data-i18n="coverageHint"></span>
-          <input id="coverage" type="number" min="30" max="90" value="60" class="mt-1 block w-full rounded border border-slate-300 bg-white px-2 py-1 dark:border-slate-600 dark:bg-slate-800" />
-        </label>
-        <label class="block text-sm"><span data-i18n="complexity"></span>
-          <select id="complexity" class="mt-1 block w-full rounded border border-slate-300 bg-white px-2 py-1 dark:border-slate-600 dark:bg-slate-800">
+        <div><label class="block text-sm font-medium"><span data-i18n="coverage"></span> <span class="font-normal text-muted" data-i18n="coverageHint"></span>
+          <input id="coverage" type="number" min="30" max="90" value="60" inputmode="numeric" class="field" />
+        </label></div>
+        <div><label class="block text-sm font-medium"><span data-i18n="complexity"></span>
+          <select id="complexity" class="field">
             <option value="auto" data-i18n="cxAuto"></option>
             <option value="1" data-i18n="cx1"></option>
             <option value="2" data-i18n="cx2" selected></option>
             <option value="3" data-i18n="cx3"></option>
             <option value="4" data-i18n="cx4"></option>
           </select>
-        </label>
-        <label class="block text-sm"><span data-i18n="border"></span>
-          <select id="border" class="mt-1 block w-full rounded border border-slate-300 bg-white px-2 py-1 dark:border-slate-600 dark:bg-slate-800">
+        </label></div>
+        <div><label class="block text-sm font-medium"><span data-i18n="border"></span>
+          <select id="border" class="field">
             <option value="on" data-i18n="borderOn"></option>
             <option value="off" data-i18n="borderOff"></option>
             <option value="random" data-i18n="borderRandom"></option>
           </select>
-        </label>
-        <label class="block text-sm"><span data-i18n="frameColor"></span>
-          <select id="frameColor" class="mt-1 block w-full rounded border border-slate-300 bg-white px-2 py-1 disabled:opacity-40 dark:border-slate-600 dark:bg-slate-800">
+        </label></div>
+        <div><label class="block text-sm font-medium"><span data-i18n="frameColor"></span>
+          <select id="frameColor" class="field">
             <option value="auto" data-i18n="frameAuto"></option>
             <option value="1"></option><option value="2"></option><option value="3"></option>
           </select>
-        </label>
-        <div class="flex items-center gap-2 text-sm">
-          <span data-i18n="seed"></span>: <output id="seed" class="font-mono">-</output>
+        </label></div>
+        <div class="flex items-baseline gap-2 border-t border-line pt-3 text-sm md:col-span-2 lg:col-span-1">
+          <span class="text-muted" data-i18n="seed"></span> <output id="seed" class="font-semibold tabular-nums">-</output>
         </div>
-        <div class="flex gap-2">
-          <button id="generate" type="button" data-i18n="generate" class="rounded bg-blue-600 px-4 py-2 text-white"></button>
-          <button id="update" type="button" data-i18n="update" disabled class="rounded border border-slate-300 px-4 py-2 disabled:opacity-40 dark:border-slate-600"></button>
+        <div class="flex flex-wrap gap-2 md:col-span-2 lg:col-span-1">
+          <button id="generate" type="button" data-i18n="generate" class="btn btn-primary flex-1"></button>
+          <button id="update" type="button" data-i18n="update" disabled class="btn flex-1"></button>
         </div>
       </form>
     </section>
 
-    <section class="space-y-4">
-      <div class="flex items-center gap-2">
-        <h2 class="mr-auto text-lg font-medium" data-i18n="preview"></h2>
-        <button id="tab2d" type="button" data-i18n="view2d" class="rounded border border-slate-300 px-3 py-1 text-sm dark:border-slate-600"></button>
-        <button id="tab3d" type="button" disabled data-i18n="view3d" class="rounded border border-slate-300 px-3 py-1 text-sm disabled:opacity-40 dark:border-slate-600"></button>
+    <section class="min-w-0 space-y-6">
+      <div>
+        <div class="mb-3 flex items-center gap-3">
+          <h2 class="mr-auto font-display text-2xl font-bold" data-i18n="preview"></h2>
+          <div class="flex">
+            <button id="tab2d" type="button" data-i18n="view2d" class="btn min-w-12 rounded-r-none"></button>
+            <button id="tab3d" type="button" disabled data-i18n="view3d" class="btn -ml-[1.5px] min-w-12 rounded-l-none"></button>
+          </div>
+        </div>
+        <div class="panel max-w-[36rem] p-2 sm:p-3 lg:max-w-none">
+          <div class="relative flex aspect-square w-full items-center justify-center bg-glaze">
+            <canvas id="preview" class="hidden max-h-full max-w-full"></canvas>
+            <canvas id="view3d" class="hidden h-full w-full touch-none"></canvas>
+            <button id="resetView" type="button" data-i18n="resetView" class="btn absolute top-2 right-2 hidden bg-tile text-sm"></button>
+            <p id="previewEmpty" class="max-w-[28ch] p-4 text-center text-sm text-muted" data-i18n="previewEmpty"></p>
+          </div>
+        </div>
       </div>
-      <div class="relative flex aspect-square max-h-[32rem] items-center justify-center rounded border border-dashed border-slate-300 dark:border-slate-600">
-        <canvas id="preview" class="hidden max-h-full max-w-full"></canvas>
-        <canvas id="view3d" class="hidden h-full w-full"></canvas>
-        <button id="resetView" type="button" data-i18n="resetView" class="absolute right-2 top-2 hidden rounded border border-slate-300 bg-white px-2 py-1 text-xs dark:border-slate-600 dark:bg-slate-800"></button>
-        <p id="previewEmpty" class="p-4 text-center text-sm text-slate-500" data-i18n="previewEmpty"></p>
+
+      <div>
+        <h2 class="font-display text-xl font-bold" data-i18n="report"></h2>
+        <div id="report" class="mt-2 space-y-1.5 border-l-2 border-cobalt pl-3 text-sm leading-relaxed"></div>
       </div>
-      <h2 class="text-lg font-medium" data-i18n="report"></h2>
-      <div id="report" class="space-y-1 rounded border border-slate-200 p-3 text-sm dark:border-slate-700"></div>
-      <div class="flex flex-wrap gap-2">
-        <button id="saveSvg" type="button" disabled data-i18n="saveSvg" class="rounded border border-slate-300 px-3 py-2 disabled:opacity-40 dark:border-slate-600"></button>
-        <button id="savePng" type="button" disabled data-i18n="savePng" class="rounded border border-slate-300 px-3 py-2 disabled:opacity-40 dark:border-slate-600"></button>
-        <button id="open3d" type="button" disabled data-i18n="settings3d" class="rounded border border-slate-300 px-3 py-2 disabled:opacity-40 dark:border-slate-600"></button>
-        <button id="save3mf" type="button" disabled data-i18n="save3mf" class="rounded border border-slate-300 px-3 py-2 disabled:opacity-40 dark:border-slate-600"></button>
-        <button id="saveBundle" type="button" disabled data-i18n="saveBundle" class="rounded border border-slate-300 px-3 py-2 disabled:opacity-40 dark:border-slate-600"></button>
-        <button id="clear" type="button" disabled data-i18n="clear" class="rounded border border-red-300 px-3 py-2 text-red-700 disabled:opacity-40 dark:border-red-800 dark:text-red-400"></button>
+
+      <div class="grid gap-5 sm:grid-cols-2">
+        <div>
+          <h3 class="mb-2 font-display text-lg font-bold" data-i18n="files2d"></h3>
+          <div class="flex flex-wrap gap-2">
+            <button id="saveSvg" type="button" disabled data-i18n="saveSvg" class="btn"></button>
+            <button id="savePng" type="button" disabled data-i18n="savePng" class="btn"></button>
+            <button id="exportJson" type="button" disabled data-i18n="exportJson" class="btn"></button>
+            <button id="copyJson" type="button" disabled data-i18n="copyJson" class="btn"></button>
+          </div>
+        </div>
+        <div>
+          <h3 class="mb-2 font-display text-lg font-bold" data-i18n="files3d"></h3>
+          <div class="flex flex-wrap gap-2">
+            <button id="open3d" type="button" disabled data-i18n="settings3d" class="btn"></button>
+            <button id="save3mf" type="button" disabled data-i18n="save3mf" class="btn"></button>
+            <button id="saveBundle" type="button" disabled data-i18n="saveBundle" class="btn"></button>
+          </div>
+          <p id="info3d" class="mt-2 text-sm text-muted"></p>
+        </div>
       </div>
-      <div class="flex flex-wrap gap-2">
-        <button id="exportJson" type="button" disabled data-i18n="exportJson" class="rounded border border-slate-300 px-3 py-2 disabled:opacity-40 dark:border-slate-600"></button>
-        <button id="copyJson" type="button" disabled data-i18n="copyJson" class="rounded border border-slate-300 px-3 py-2 disabled:opacity-40 dark:border-slate-600"></button>
+
+      <div>
+        <details class="panel">
+          <summary class="disclosure flex min-h-11 items-center px-4 py-2 font-display text-lg font-bold" data-i18n="importTitle"></summary>
+          <div class="space-y-4 px-4 pb-4">
+            <label class="block text-sm font-medium"><span data-i18n="importPaste"></span>
+              <textarea id="importText" rows="4" class="field"></textarea>
+            </label>
+            <label class="block text-sm font-medium"><span data-i18n="importFile"></span>
+              <input id="importFile" type="file" accept=".json,application/json" class="mt-1 block w-full text-base file:mr-3 file:min-h-11 file:cursor-pointer file:rounded-[2px] file:border-[1.5px] file:border-cobalt file:bg-transparent file:px-4 file:font-semibold file:text-cobalt" />
+            </label>
+            <button id="importBtn" type="button" data-i18n="importBtn" class="btn btn-primary"></button>
+          </div>
+        </details>
+        <div id="importMsg" class="mt-2 space-y-1 text-sm"></div>
       </div>
-      <p id="info3d" class="text-sm text-slate-500"></p>
-      <h2 class="text-lg font-medium" data-i18n="importTitle"></h2>
-      <label class="block text-sm"><span data-i18n="importPaste"></span>
-        <textarea id="importText" rows="4" class="mt-1 block w-full rounded border border-slate-300 bg-white px-2 py-1 font-mono text-xs dark:border-slate-600 dark:bg-slate-800"></textarea>
-      </label>
-      <label class="block text-sm"><span data-i18n="importFile"></span>
-        <input id="importFile" type="file" accept=".json,application/json" class="mt-1 block text-sm" />
-      </label>
-      <button id="importBtn" type="button" data-i18n="importBtn" class="rounded bg-blue-600 px-4 py-2 text-white"></button>
-      <div id="importMsg" class="space-y-1 text-xs"></div>
+
+      <div class="flex justify-end border-t border-line pt-4">
+        <button id="clear" type="button" disabled data-i18n="clear" class="btn btn-danger"></button>
+      </div>
     </section>
     </div>
   </main>
 
-  <footer class="border-t border-slate-200 bg-white p-4 text-center text-xs text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400">
-    <span id="footerDate"></span> | <span id="footerVersion"></span> | by <a href="https://azseashell.com" class="underline hover:text-slate-700 dark:hover:text-slate-300">AZSeashell</a> | <a href="https://github.com/emanuelmoniz/Portuguese-Tile-Generator" class="underline hover:text-slate-700 dark:hover:text-slate-300">GitHub</a>
+  <footer class="mt-8 border-t border-line px-4 py-5 text-center text-sm text-muted">
+    <span id="footerDate"></span> | <span id="footerVersion"></span> | by <a href="https://azseashell.com" class="underline decoration-line underline-offset-2 hover:text-cobalt">AZSeashell</a> | <a href="https://github.com/emanuelmoniz/Portuguese-Tile-Generator" class="underline decoration-line underline-offset-2 hover:text-cobalt">GitHub</a>
   </footer>
 
-  <dialog id="dlg3d" class="m-auto w-80 rounded bg-white p-6 text-slate-900 backdrop:bg-black/50 dark:bg-slate-800 dark:text-slate-100">
-    <h2 class="text-lg font-medium" data-i18n="dlg3d"></h2>
+  <dialog id="dlg3d" class="dlg w-[22rem]">
+    <h2 class="font-display text-2xl font-bold" data-i18n="dlg3d"></h2>
     <form id="form3d" method="dialog" class="mt-4 space-y-4">
-      <label class="block text-sm"><span data-i18n="emboss"></span> <span class="text-slate-500" data-i18n="embossHint"></span>
-        <input id="emboss" type="number" min="0" max="5" step="0.01" value="0.05" class="mt-1 block w-full rounded border border-slate-300 bg-white px-2 py-1 dark:border-slate-600 dark:bg-slate-800" />
+      <label class="block text-sm font-medium"><span data-i18n="emboss"></span> <span class="block font-normal text-muted" data-i18n="embossHint"></span>
+        <input id="emboss" type="number" min="0" max="5" step="0.01" value="0.05" inputmode="decimal" class="field" />
       </label>
-      <p data-err="emboss" class="text-xs text-red-600 dark:text-red-400"></p>
-      <label class="block text-sm"><span data-i18n="plate"></span> <span class="text-slate-500" data-i18n="plateHint"></span>
-        <input id="plate" type="number" min="1" max="10" step="0.1" value="3" class="mt-1 block w-full rounded border border-slate-300 bg-white px-2 py-1 dark:border-slate-600 dark:bg-slate-800" />
+      <p data-err="emboss" class="text-sm text-manganes"></p>
+      <label class="block text-sm font-medium"><span data-i18n="plate"></span> <span class="font-normal text-muted" data-i18n="plateHint"></span>
+        <input id="plate" type="number" min="1" max="10" step="0.1" value="3" inputmode="decimal" class="field" />
       </label>
-      <p data-err="plate" class="text-xs text-red-600 dark:text-red-400"></p>
-      <div class="flex gap-2">
-        <button id="gen3mf" type="submit" data-i18n="gen3mf" class="rounded bg-blue-600 px-4 py-2 text-white"></button>
-        <button id="cancel3d" type="button" data-i18n="cancel" class="rounded border border-slate-300 px-4 py-2 dark:border-slate-600"></button>
+      <p data-err="plate" class="text-sm text-manganes"></p>
+      <div class="flex flex-wrap gap-2">
+        <button id="gen3mf" type="submit" data-i18n="gen3mf" class="btn btn-primary flex-1"></button>
+        <button id="cancel3d" type="button" data-i18n="cancel" class="btn flex-1"></button>
       </div>
     </form>
   </dialog>
 
-  <dialog id="dlgUpdate" class="m-auto w-96 rounded bg-white p-6 text-slate-900 backdrop:bg-black/50 dark:bg-slate-800 dark:text-slate-100">
-    <h2 class="text-lg font-medium" data-i18n="dlgUpdate"></h2>
-    <p id="dlgUpdateMsg" class="mt-4 text-sm"></p>
-    <div class="mt-4 flex flex-wrap gap-2">
-      <button id="dlgNew" type="button" data-i18n="dlgNew" class="rounded bg-blue-600 px-4 py-2 text-white"></button>
-      <button id="dlgOnly" type="button" data-i18n="dlgOnly" class="rounded border border-slate-300 px-4 py-2 dark:border-slate-600"></button>
-      <button id="dlgCancel" type="button" data-i18n="cancel" class="rounded border border-slate-300 px-4 py-2 dark:border-slate-600"></button>
+  <dialog id="dlgUpdate" class="dlg w-[26rem]">
+    <h2 class="font-display text-2xl font-bold" data-i18n="dlgUpdate"></h2>
+    <p id="dlgUpdateMsg" class="mt-3 leading-relaxed"></p>
+    <div class="mt-5 flex flex-col gap-2">
+      <button id="dlgNew" type="button" data-i18n="dlgNew" class="btn btn-primary"></button>
+      <button id="dlgOnly" type="button" data-i18n="dlgOnly" class="btn"></button>
+      <button id="dlgCancel" type="button" data-i18n="cancel" class="btn border-transparent"></button>
     </div>
   </dialog>
 

@@ -24,11 +24,7 @@
     root.lang = lang;
     document.querySelectorAll('[data-i18n]').forEach(function (el) {
       var key = el.dataset.i18n;
-      if (key === 'instructionsList') {
-        el.innerHTML = d[key];
-      } else {
-        el.textContent = d[key];
-      }
+      el.textContent = d[key];
     });
     document.querySelectorAll('[data-i18n-title]').forEach(function (el) { el.title = d[el.dataset.i18nTitle]; });
     document.title = d.title;
@@ -128,17 +124,17 @@
 
   function renderReport() {
     var el = $('report');
-    el.classList.toggle('text-slate-500', !tile);
+    el.classList.toggle('text-muted', !tile);
     if (!tile) { el.textContent = t('reportEmpty'); return; }
     var r = tile.report, f = function (x) { return x.toFixed(1); }, h = '';
-    h += '<p>' + t('rSeed') + ': <b class="font-mono">' + r.seed + '</b> · ' + t('rBorder') + ': ' + t(r.border ? 'yes' : 'no') + ' · ' + t('rMode') + ': ' + r.mode + ' · ' + t('complexity') + ': ' + r.complexity + (r.complexityAuto ? ' (' + t('cxAutoShort') + ')' : '') + '</p>';
+    h += '<p>' + t('rSeed') + ': <b class="tabular-nums">' + r.seed + '</b> · ' + t('rBorder') + ': ' + t(r.border ? 'yes' : 'no') + ' · ' + t('rMode') + ': ' + r.mode + ' · ' + t('complexity') + ': ' + r.complexity + (r.complexityAuto ? ' (' + t('cxAutoShort') + ')' : '') + '</p>';
     h += '<p>' + t('rCoverage') + ': <b>' + f(r.coverage.achieved) + '%</b> (' + t('rTarget') + ' ' + r.coverage.target + '%)</p>';
     h += '<p>' + t('rShares') + ': ' + r.shares.map(function (s, i) {
-      return '<span class="whitespace-nowrap"><span class="inline-block h-3 w-3 rounded-sm border border-slate-400 align-middle" style="background:' + tile.colors[i + 1] + '"></span> <b>' + f(s.achieved) + '%</b> (' + s.target + '%)</span>';
+      return '<span class="whitespace-nowrap"><span class="inline-block h-3 w-3 rounded-sm border border-line align-middle" style="background:' + tile.colors[i + 1] + '"></span> <b>' + f(s.achieved) + '%</b> (' + s.target + '%)</span>';
     }).join(' · ') + '</p>';
     var sh = r.shapes, sp = function (x) { return x < 1 ? x.toFixed(2) : f(x); };
     h += '<p>' + t('rShapes') + ': ' + t('rShapesText', sh.count, sp(sh.smallestPct), sp(sh.largestPct), sh.min, sh.max) + '</p>';
-    r.warnings.forEach(function (w) { h += '<p class="text-amber-600 dark:text-amber-400">⚠ ' + t('w' + w, sp(sh.smallestPct), sh.min, sp(sh.largestPct), sh.max) + '</p>'; });
+    r.warnings.forEach(function (w) { h += '<p class="text-ocre">⚠ ' + t('w' + w, sp(sh.smallestPct), sh.min, sp(sh.largestPct), sh.max) + '</p>'; });
     el.innerHTML = h;
   }
 
@@ -155,8 +151,8 @@
     $('resetView').classList.toggle('hidden', !is3);
     $('previewEmpty').classList.toggle('hidden', has);
     $('tab3d').disabled = !can;
-    $('tab2d').classList.toggle('bg-blue-600', !is3); $('tab2d').classList.toggle('text-white', !is3);
-    $('tab3d').classList.toggle('bg-blue-600', is3); $('tab3d').classList.toggle('text-white', is3);
+    $('tab2d').classList.toggle('bg-cobalt', !is3); $('tab2d').classList.toggle('text-on-cobalt', !is3);
+    $('tab3d').classList.toggle('bg-cobalt', is3); $('tab3d').classList.toggle('text-on-cobalt', is3);
     if (is3) Viewer.resize();
   }
 
@@ -298,7 +294,7 @@
   $('border').addEventListener('input', syncFrame);
   function errSlot(id, after) {
     var p = document.createElement('p');
-    p.className = 'mt-1 text-xs text-red-600 dark:text-red-400';
+    p.className = 'mt-1 text-sm text-manganes';
     p.dataset.err = id;
     after.after(p);
   }
@@ -323,9 +319,9 @@
     var el = $('importMsg');
     el.innerHTML = '';
     function add(cls, e) { var p = document.createElement('p'); p.className = cls; p.textContent = t.apply(null, e); el.appendChild(p); }
-    errs.forEach(function (e) { add('text-red-600 dark:text-red-400', e); });
-    warns.forEach(function (e) { add('text-amber-600 dark:text-amber-400', e); });
-    if (ok) add('text-green-700 dark:text-green-400', ['importOk']);
+    errs.forEach(function (e) { add('text-manganes', e); });
+    warns.forEach(function (e) { add('text-ocre', e); });
+    if (ok) add('text-cobalt', ['importOk']);
   }
   function importDesign(text) {
     var r = Export.parse(text);
@@ -390,5 +386,5 @@
   // Footer initialization
   var d = new Date();
   $('footerDate').textContent = d.getFullYear();
-  $('footerVersion').textContent = 'v2.2.0';
+  $('footerVersion').textContent = 'v2.3.0';
 })();

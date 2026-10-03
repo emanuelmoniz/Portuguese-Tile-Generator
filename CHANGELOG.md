@@ -142,3 +142,11 @@ Keep footer version and changelog synchronized. See CLAUDE.md "Maintenance" for 
 - "3D settings..." button renamed **Generate 3D**; after generating, the preview switches to an interactive 3D view (orbit, zoom, Reset view) with a 2D / 3D toggle.
 - three.js r147 + OrbitControls vendored (works offline / from file://).
 - [2026-10-03] P7b: Generate 3D button, three.js 3D viewer. [d5959fe](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/d5959fe)
+
+## [2.3.0] – 2026-10-03 (Phase P7c – Redesign)
+
+- Azulejo redesign: tin-glaze white / cobalt ink / ochre / manganese palette as CSS tokens (light + dark), Lisbon street-plaque title, cercadura frieze.
+- Fonts Lusitana + Albert Sans (OFL) vendored as woff2 in `fonts/` (works offline).
+- Two-column workspace on desktop (parameters | preview, report, "2D files" and "3D" action groups); Clear set apart; Import in a collapsible card.
+- Mobile first: no horizontal scroll at 360 px, tap targets ≥ 44 px, 16 px inputs; preview and 3D viewer scale to the column; dialogs fit the screen.
+- About + bullet list replaced by a short intro and a collapsible "How to use" (parameters, Generate vs Update, report, files, 3D, printing), EN + PT.
