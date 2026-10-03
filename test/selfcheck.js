@@ -68,10 +68,11 @@ const CASES = [
 ];
 const out = path.join(__dirname, 'out');
 fs.mkdirSync(out, { recursive: true });
-const fails = [];
+const fails = [], RESULTS = [];
 CASES.forEach((c, i) => {
   const t0 = Date.now(), { groups, report: r } = Engine.generate({ seed: 1000 + i, colors: COLORS.slice(0, c.percents.length + 1), ...c });
   const name = `case${i + 1}_${c.sizeMm}mm_${c.percents.length}c_${c.coverage}_${c.border}`;
+  RESULTS.push({ name, c, colors: COLORS.slice(0, c.percents.length + 1), groups, r });
   fs.writeFileSync(path.join(out, name + '.json'), JSON.stringify({ size: c.sizeMm, colors: COLORS.slice(0, c.percents.length + 1), groups, report: r }));
   console.log(name.padEnd(28), `${Date.now() - t0}ms`, r.mode.padEnd(6),
     'cov', r.coverage.achieved.toFixed(1), 'shares', r.shares.map(s => s.achieved.toFixed(1)).join('/'),
@@ -80,4 +81,39 @@ CASES.forEach((c, i) => {
   if (r.warnings.length) fails.push(name);
 });
 assert(!fails.length, 'engine cases off target: ' + fails.join(', '));
+
+// ---- 3D: every mesh watertight (each directed edge once, reverse once), positive volume, volume matches analytics ----
+const Mesh = require('../js/mesh3mf.js'), fflate = require('../vendor/fflate.min.js');
+function check3d(label, groups, colors, size, opts, coverage) {
+  const { parts, bytes } = Mesh.generate(groups, colors, size, opts);
+  let raised = 0;
+  parts.forEach(p => {
+    const i = Mesh.inspect(p.mesh);
+    assert.strictEqual(i.bad, 0, label + ' ' + p.name + ' not watertight');
+    assert(i.vol > 0, label + ' ' + p.name + ' volume');
+    assert(Math.abs(i.vol - p.mesh.vol) / i.vol < 1e-3, label + ' ' + p.name + ' volume vs cap area');
+    if (p.name !== 'base') raised += i.vol;
+  });
+  const h = opts.emboss || Mesh.INLAY, cov = raised / h / (size * size) * 100;
+  assert(Math.abs(cov - coverage) < 0.5, label + ' coverage ' + cov.toFixed(2) + ' vs ' + coverage.toFixed(2));
+  const rrVol = (size * size - (4 - Math.PI)) * opts.plate, baseVol = parts[0].mesh.vol;
+  assert(Math.abs(baseVol - (opts.emboss ? rrVol : rrVol - raised)) / rrVol < 1e-3, label + ' base volume');
+  // read the 3MF back: same triangle/vertex counts, 1 basematerial per part
+  const z = fflate.unzipSync(bytes), model = Buffer.from(z['3D/3dmodel.model']).toString();
+  assert.strictEqual((model.match(/<triangle /g) || []).length, parts.reduce((s, p) => s + p.mesh.t.length / 3, 0));
+  assert.strictEqual((model.match(/<base /g) || []).length, parts.length);
+  assert(z['Metadata/model_settings.config'] && z['Metadata/project_settings.config']);
+  return { parts, bytes };
+}
+RESULTS.forEach(({ name, c, colors, groups, r }) => {
+  [{ emboss: 1.5, plate: 3 }, { emboss: 0, plate: 3 }].forEach(o => {
+    const t0 = Date.now();
+    check3d(name + ' emboss' + o.emboss, groups, colors, c.sizeMm, o, r.coverage.achieved);
+    console.log('3D', name.padEnd(28), 'emboss', o.emboss, `${Date.now() - t0}ms`);
+  });
+});
+// sample files for the slicer check
+const S = RESULTS[2];
+fs.writeFileSync(path.join(out, 'sample_emboss.3mf'), check3d('sample', S.groups, S.colors, S.c.sizeMm, { emboss: 1.2, plate: 3 }, S.r.coverage.achieved).bytes);
+fs.writeFileSync(path.join(out, 'sample_inlay.3mf'), check3d('sample', S.groups, S.colors, S.c.sizeMm, { emboss: 0, plate: 3 }, S.r.coverage.achieved).bytes);
 console.log('selfcheck OK');

@@ -11,6 +11,7 @@
 
   var tile = null;      // { groups, report, colors, svg } of the current design
   var errors = {};      // field id -> [i18n key, ...args]
+  var s3d = { emboss: 1, plate: 3 };  // last confirmed 3D settings (mm)
 
   function setTheme(dark) {
     root.classList.toggle('dark', dark);
@@ -28,6 +29,7 @@
     set('lang', lang);
     showErrors();
     renderReport();
+    render3d();
   }
 
   // ---- form ----
@@ -112,9 +114,16 @@
     el.innerHTML = h;
   }
 
+  function render3d() {
+    var el = $('info3d');
+    el.textContent = tile ? t('info3d', s3d.emboss, s3d.plate) + (tile.mf ? ' · ' + t('info3dReady', tile.mf.parts.length, tile.mf.tris) : '') : '';
+  }
+
   function setButtons() {
     var on = !!tile;
-    ['regenerate', 'saveSvg', 'savePng', 'clear'].forEach(function (id) { $(id).disabled = !on; });
+    ['regenerate', 'saveSvg', 'savePng', 'open3d', 'clear'].forEach(function (id) { $(id).disabled = !on; });
+    ['save3mf', 'saveBundle'].forEach(function (id) { $(id).disabled = !(on && tile.mf); });
+    render3d();
   }
 
   function generate() {
@@ -140,11 +149,48 @@
   function clearAll() {
     tile = null;
     $('params').reset();
+    $('form3d').reset();
+    s3d = { emboss: 1, plate: 3 };
     $('seed').textContent = '-';
     $('preview').classList.add('hidden');
     $('previewEmpty').classList.remove('hidden');
     syncRows();
     renderReport();
+    setButtons();
+  }
+
+  // ---- 3D ----
+  function validate3d() {
+    var e = parseFloat($('emboss').value), p = parseFloat($('plate').value);
+    delete errors.emboss; delete errors.plate;
+    if (!(e >= 0 && e <= 5)) errors.emboss = ['errEmboss'];
+    if (!(p >= 1 && p <= 10)) errors.plate = ['errPlate'];
+    showErrors();
+    return errors.emboss || errors.plate ? null : { emboss: e, plate: p };
+  }
+
+  function open3d() {
+    $('emboss').value = s3d.emboss;
+    $('plate').value = s3d.plate;
+    validate3d();
+    $('dlg3d').showModal();
+  }
+
+  function gen3mf(ev) {
+    ev.preventDefault();
+    var o = validate3d();
+    if (!o) return;
+    try {
+      var r = Mesh3mf.generate(tile.groups, tile.colors, tile.report.sizeMm, o);
+      s3d = o;
+      tile.mf = { bytes: r.bytes, parts: r.parts, tris: r.parts.reduce(function (n, p) { return n + p.mesh.t.length / 3; }, 0) };
+    } catch (e) {
+      tile.mf = null;
+      $('info3d').textContent = t('wfail3d', e.message);
+      $('dlg3d').close();
+      return;
+    }
+    $('dlg3d').close();
     setButtons();
   }
 
@@ -183,6 +229,22 @@
   $('clear').onclick = clearAll;
   $('saveSvg').onclick = function () { save(new Blob([tile.svg], { type: 'image/svg+xml' }), 'svg'); };
   $('savePng').onclick = function () { $('preview').toBlob(function (b) { save(b, 'png'); }, 'image/png'); };
+  ['emboss', 'plate'].forEach(function (id) { $(id).addEventListener('input', validate3d); });
+  $('open3d').onclick = open3d;
+  $('form3d').onsubmit = gen3mf;
+  $('cancel3d').onclick = function () { $('dlg3d').close(); };
+  $('save3mf').onclick = function () { save(new Blob([tile.mf.bytes], { type: 'model/3mf' }), '3mf'); };
+  $('saveBundle').onclick = function () {
+    $('preview').toBlob(function (b) {
+      b.arrayBuffer().then(function (ab) {
+        var n = 'tile_' + tile.report.sizeMm + 'mm_seed' + tile.report.seed, z = {};
+        z[n + '.svg'] = fflate.strToU8(tile.svg);
+        z[n + '.png'] = [new Uint8Array(ab), { level: 0 }];
+        z[n + '.3mf'] = [tile.mf.bytes, { level: 0 }];
+        save(new Blob([fflate.zipSync(z)], { type: 'application/zip' }), 'zip');
+      });
+    }, 'image/png');
+  };
   $('theme-toggle').onclick = function () { setTheme(!root.classList.contains('dark')); };
   $('lang-toggle').onclick = function () { setLang(root.lang === 'en' ? 'pt' : 'en'); };
 
