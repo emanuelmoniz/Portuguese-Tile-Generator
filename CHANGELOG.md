@@ -96,9 +96,11 @@ Format: [Semantic Versioning](https://semver.org/) — v[major].[minor].[patch].
 
 ---
 
-## [2.0.0] – *Planned* (After P6e)
+## [2.0.0] – 2026-10-03 (P6 complete)
 
-**P6 complete.** Minor features + quality refinements → major version.
+**P6a–P6e complete.** Branding, frame color, Generate/Update flow, JSON export/import, and the full test suite.
+
+- [2026-10-03] Version bump to 2.0.0 (footer, engineVersion). HASH
 
 ---
 

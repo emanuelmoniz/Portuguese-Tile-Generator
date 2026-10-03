@@ -64,7 +64,7 @@ After adding Tailwind classes: `tools\tailwindcss.exe -i css/input.css -o css/ap
 **Versioning strategy:** Semantic versioning (major.minor.patch). Each phase bumps the minor version:
 - v1.0.0: P0–P5 (initial release, complete).
 - v1.1.0 – v1.5.0: P6a–P6e (one per phase).
-- v2.0.0: After P6e complete.
+- v2.0.0: P6 complete (released).
 
 After each commit+push to main:
 1. Update `index.html` footer: 

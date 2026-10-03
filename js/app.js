@@ -367,5 +367,5 @@
   // Footer initialization
   var d = new Date();
   $('footerDate').textContent = d.getFullYear();
-  $('footerVersion').textContent = 'v1.5.0';
+  $('footerVersion').textContent = 'v2.0.0';
 })();
