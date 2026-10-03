@@ -173,3 +173,7 @@ Keep footer version and changelog synchronized. See CLAUDE.md "Maintenance" for 
 ## [3.3.0] – 2026-10-03 (Phase P8c – P8 complete)
 
 - [2026-10-03] P8c: collapsible report (warning count in the summary, seed/frame/layout line removed), "Export design" panel (JSON textarea + Export design / Copy code), "Import Design" rename. P8 summary: new defaults (100 mm, 45%), inline 3D parameters, 3D dialog and seed display removed. [3f88e95](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/3f88e95)
+
+## [3.3.1] – 2026-10-03
+
+- [2026-10-03] 3MF-ready info line moved into the report panel. [d2ff723](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/d2ff723)
