@@ -169,3 +169,7 @@ Keep footer version and changelog synchronized. See CLAUDE.md "Maintenance" for 
 ## [3.2.0] – 2026-10-03 (Phase P8b)
 
 - [2026-10-03] P8b: 3D parameters inline in the left panel, 3D dialog and seed display removed. [3361a6c](https://github.com/emanuelmoniz/Portuguese-Tile-Generator/commit/3361a6c)
+
+## [3.3.0] – 2026-10-03 (Phase P8c – P8 complete)
+
+- [2026-10-03] P8c: collapsible report (warning count in the summary, seed/frame/layout line removed), "Export design" panel (JSON textarea + Export design / Copy code), "Import Design" rename. P8 summary: new defaults (100 mm, 45%), inline 3D parameters, 3D dialog and seed display removed. COMMIT

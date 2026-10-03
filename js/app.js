@@ -122,11 +122,12 @@
   }
 
   function renderReport() {
-    var el = $('report');
+    var el = $('report'), b = $('warnBadge');
     el.classList.toggle('text-muted', !tile);
+    b.classList.toggle('hidden', !tile || !tile.report.warnings.length);
+    if (tile) b.textContent = t('warnCount', tile.report.warnings.length);
     if (!tile) { el.textContent = t('reportEmpty'); return; }
     var r = tile.report, f = function (x) { return x.toFixed(1); }, h = '';
-    h += '<p>' + t('rSeed') + ': <b class="tabular-nums">' + r.seed + '</b> · ' + t('rBorder') + ': ' + t(r.border ? 'yes' : 'no') + ' · ' + t('rMode') + ': ' + r.mode + ' · ' + t('complexity') + ': ' + r.complexity + (r.complexityAuto ? ' (' + t('cxAutoShort') + ')' : '') + '</p>';
     h += '<p>' + t('rCoverage') + ': <b>' + f(r.coverage.achieved) + '%</b> (' + t('rTarget') + ' ' + r.coverage.target + '%)</p>';
     h += '<p>' + t('rShares') + ': ' + r.shares.map(function (s, i) {
       return '<span class="whitespace-nowrap"><span class="inline-block h-3 w-3 rounded-sm border border-line align-middle" style="background:' + tile.colors[i + 1] + '"></span> <b>' + f(s.achieved) + '%</b> (' + s.target + '%)</span>';
@@ -159,6 +160,8 @@
     var on = !!tile;
     if (!(on && tile.mf)) Viewer.dispose(); // the 3MF is gone: free the viewer
     ['saveSvg', 'savePng', 'open3d', 'clear', 'exportJson', 'copyJson'].forEach(function (id) { $(id).disabled = !on; });
+    $('exportPanel').classList.toggle('hidden', !on);
+    if (on) $('exportText').value = exportText();
     ['save3mf', 'saveBundle'].forEach(function (id) { $(id).disabled = !(on && tile.mf); });
     render3d();
     view('2d');
@@ -392,5 +395,5 @@
   // Footer initialization
   var d = new Date();
   $('footerDate').textContent = d.getFullYear();
-  $('footerVersion').textContent = 'v3.2.0';
+  $('footerVersion').textContent = 'v3.3.0';
 })();

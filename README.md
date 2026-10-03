@@ -35,7 +35,7 @@ cd Portuguese-Tile-Generator
 - **Coverage**: Target raised area as % of tile; 30–90%. Tolerance ±5%.
 - **Border frame**: On (decorative frame), Off, or Random (decided by the seed).
 
-**Step 2: 3D Settings (optional)**
+**Step 2: 3D settings (inline, below the parameters)**
 
 - **Emboss depth** (mm): 0–5. At 0, uses inlay (fixed 0.6 mm depth, flush with top).
 - **Plate thickness** (mm): 1–10. Total height of the base slab.
@@ -48,8 +48,8 @@ After generating:
 
 1. **Save SVG**: Vector format, scalable, editable in Inkscape or Adobe Illustrator.
 2. **Save PNG**: Raster preview at 1200×1200 px.
-3. **Settings 3D**: Opens a dialog for emboss/inlay and plate thickness.
-4. **Generate 3MF**: Creates the 3D model (appears after 3D settings).
+3. **Export design**: Collapsible panel with the design JSON (parameters + seed); download it or copy the code. **Import Design** restores it.
+4. **Generate 3D**: Creates the 3D model from the inline 3D settings.
 5. **Save 3MF**: Multi-color 3D model, ready to slice and print.
 6. **Save Bundle**: ZIP file with SVG + PNG + 3MF.
 7. **Clear**: Reset the form and start fresh.

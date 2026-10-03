@@ -37,12 +37,12 @@ and turns them into a multi-color 3MF for 3D printing.
 - Ground modes are tried first from 50% coverage (and when the motifs alone cannot reach it).
 - Shape-size limits: every printed island of a raised color is 0.05%-35% of the tile area (base, frame band
   and ground fill exempt).
-- Seed is shown, plus a "Regenerate" button (new seed, same params). No style picker.
+- The seed is not shown; it only lives in the export JSON. "Generate" always makes a new seed. No style picker.
 - Min raised feature 1.0 mm, min base-color channel 1.5 mm, in absolute mm, so small tiles get
   fewer and bigger motifs. If targets can't be met, show achieved vs target + a warning, never fail silently.
 - Full square (D4) symmetry and padrão style, per the source project's `01_designs/../CLAUDE.md`.
 
-### 3D params (dialog, then back to the main view)
+### 3D params (inline section of the params panel)
 - Emboss 0-5 mm (0 = inlay: fixed depth 0.6 mm, flush with the top). Plate thickness 1-10 mm.
 - Corner radius fixed at 1 mm.
 - Output 3MF: one object, one part per color; core-spec `basematerials` displaycolor per part
@@ -52,11 +52,11 @@ and turns them into a multi-color 3MF for 3D printing.
 ### User flow
 1. Set params (incl. frame color, optional, default "Auto") → Generate (new seed) or Update tile (style params only: size, colors, frame color)
 2. A confirm dialog may appear when switching between Update and Generate
-3. Preview (PNG drawn on canvas) + report (coverage, shares, warnings)
-4. Save SVG / PNG, or export the design (JSON)
-5. "Generate 3D" button → 3D settings dialog → Generate 3MF (emboss/inlay) → main view switches to the 3D viewer
+3. Preview (PNG drawn on canvas) + collapsible report (closed; warning count in the summary)
+4. Save SVG / PNG. The collapsible "Export design" panel (shown once a tile exists) holds the JSON with Export design / Copy code buttons
+5. Set emboss/plate inline → "Generate 3D" → main view switches to the 3D viewer (no dialog)
 6. Save 3MF, or save bundle (.zip with SVG + PNG + 3MF)
-7. Import an export (paste or upload JSON) to regenerate a previous design
+7. "Import Design" panel (paste or upload JSON) to regenerate a previous design
 8. Clear all and start fresh
 
 Save buttons stay disabled until their file exists. 3D viewer: three.js r147 (vendored), shows the generated 3MF meshes, orbit/zoom, 2D/3D toggle on the preview.
@@ -72,6 +72,7 @@ After adding Tailwind classes: `tools\tailwindcss.exe -i css/input.css -o css/ap
 - v2.0.0: P6 complete (released).
 - v2.1.0-v2.3.0: P7a-P7c (shape limits, 3D viewer, redesign).
 - v3.0.0: P7 complete.
+- v3.1.0-v3.3.0: P8a-P8c (defaults size 100 / coverage 45, inline 3D params, report/export/import panels).
 
 After each commit+push to main:
 1. Update `index.html` footer: 

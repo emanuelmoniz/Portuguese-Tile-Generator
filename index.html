@@ -134,10 +134,10 @@
         </div>
       </div>
 
-      <div>
-        <h2 class="font-display text-xl font-bold" data-i18n="report"></h2>
-        <div id="report" class="mt-2 space-y-1.5 border-l-2 border-cobalt pl-3 text-sm leading-relaxed"></div>
-      </div>
+      <details class="panel">
+        <summary class="disclosure flex min-h-11 items-center gap-2 px-4 py-2 font-display text-lg font-bold"><span data-i18n="report"></span><span id="warnBadge" class="hidden rounded-[2px] bg-ocre px-2 text-sm text-white"></span></summary>
+        <div id="report" class="space-y-1.5 px-4 pb-4 text-sm leading-relaxed"></div>
+      </details>
 
       <div class="grid gap-5 sm:grid-cols-2">
         <div>
@@ -145,8 +145,6 @@
           <div class="flex flex-wrap gap-2">
             <button id="saveSvg" type="button" disabled data-i18n="saveSvg" class="btn"></button>
             <button id="savePng" type="button" disabled data-i18n="savePng" class="btn"></button>
-            <button id="exportJson" type="button" disabled data-i18n="exportJson" class="btn"></button>
-            <button id="copyJson" type="button" disabled data-i18n="copyJson" class="btn"></button>
           </div>
         </div>
         <div>
@@ -158,6 +156,17 @@
           <p id="info3d" class="mt-2 text-sm text-muted"></p>
         </div>
       </div>
+
+      <details id="exportPanel" class="panel hidden">
+        <summary class="disclosure flex min-h-11 items-center px-4 py-2 font-display text-lg font-bold" data-i18n="exportTitle"></summary>
+        <div class="space-y-4 px-4 pb-4">
+          <textarea id="exportText" rows="6" readonly class="field"></textarea>
+          <div class="flex flex-wrap gap-2">
+            <button id="exportJson" type="button" disabled data-i18n="exportJson" class="btn"></button>
+            <button id="copyJson" type="button" disabled data-i18n="copyJson" class="btn"></button>
+          </div>
+        </div>
+      </details>
 
       <div>
         <details class="panel">
