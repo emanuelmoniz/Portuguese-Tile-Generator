@@ -35,6 +35,7 @@
     showErrors();
     renderReport();
     render3d();
+    syncFrame();
   }
 
   // ---- form ----
@@ -46,6 +47,18 @@
     var even = [[100], [50, 50], [34, 33, 33]][k - 1];
     even.forEach(function (v, i) { $('pct' + (i + 1)).value = v; });
     $('pct1').disabled = k === 1;
+    syncFrame();
+  }
+
+  // frame color: options follow numColors, disabled without a border or a choice
+  function syncFrame() {
+    var k = numRaised(), sel = $('frameColor');
+    for (var i = 1; i <= 3; i++) {
+      sel.options[i].textContent = t('raised') + ' ' + i;
+      sel.options[i].hidden = sel.options[i].disabled = i > k;
+    }
+    if (sel.value !== 'auto' && +sel.value > k) sel.value = 'auto';
+    sel.disabled = $('border').value === 'off' || k < 2;
     validate();
   }
 
@@ -72,6 +85,8 @@
     }
     if (bad || Math.abs(sum - 100) > 1e-6) errors.pct1 = ['errPct', Math.round(sum * 100) / 100];
     p.border = $('border').value;
+    p.frameColor = $('frameColor').value;
+    if (p.frameColor !== 'auto' && !(+p.frameColor <= k)) errors.frameColor = ['errFrameColor'];
     showErrors();
     return Object.keys(errors).length ? null : p;
   }
@@ -135,7 +150,7 @@
     var p = validate();
     if (!p) return;
     try {
-      var res = Engine.generate({ sizeMm: p.sizeMm, colors: p.colors, percents: p.percents, coverage: p.coverage, border: p.border });
+      var res = Engine.generate({ sizeMm: p.sizeMm, colors: p.colors, percents: p.percents, coverage: p.coverage, border: p.border, frameColor: p.border === 'off' || p.frameColor === 'auto' ? 'auto' : p.frameColor });
       tile = { groups: res.groups, report: res.report, colors: p.colors, svg: svgString(res.groups, p.colors, p.sizeMm) };
     } catch (e) {
       tile = null;
@@ -212,9 +227,10 @@
   var theme = get('theme');
   setTheme(theme ? theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches);
 
-  document.querySelectorAll('#size, #coverage, #pct1, #pct2, #pct3, #border, [id^=color]').forEach(function (el) {
+  document.querySelectorAll('#size, #coverage, #pct1, #pct2, #pct3, #border, #frameColor, [id^=color]').forEach(function (el) {
     el.addEventListener('input', validate);
   });
+  $('border').addEventListener('input', syncFrame);
   function errSlot(id, after) {
     var p = document.createElement('p');
     p.className = 'mt-1 text-xs text-red-600 dark:text-red-400';
@@ -223,6 +239,7 @@
   }
   errSlot('size', $('size').closest('label'));
   errSlot('coverage', $('coverage').closest('label'));
+  errSlot('frameColor', $('frameColor').closest('label'));
   errSlot('pct1', $('row3'));
   for (var i = 0; i <= 3; i++) (function (i) {
     errSlot('color' + i, $('row' + i));
@@ -259,5 +276,5 @@
   // Footer initialization
   var d = new Date();
   $('footerDate').textContent = d.getFullYear();
-  $('footerVersion').textContent = 'v1.1.0';
+  $('footerVersion').textContent = 'v1.2.0';
 })();

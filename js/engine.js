@@ -1,5 +1,5 @@
 // Design engine (plan.md section 2): seeded padrao layout -> color assignment -> tuning loop.
-// generate({seed, sizeMm, colors, percents, coverage, border}) -> {groups, report}
+// generate({seed, sizeMm, colors, percents, coverage, border, frameColor}) -> {groups, report}
 //   percents = share of the raised area per raised color (sum 100), coverage = raised / tile area in %,
 //   border = 'on' | 'off' | 'random' (decided by the seed).
 // groups[k] = shapes of raised color k in tile mm coordinates (one shape of rings, even-odd), as check.js expects.
@@ -190,7 +190,8 @@ var Engine = (function () {
 
   // ---- 2. color assignment: groups -> colors (index K = white, ground modes only) ----
   // mode 'white': no ground; 'ground': color kg fills the rest; 'two': kg outside the reserve, ki inside it
-  function assign(gs, p, T, S2, mode, rng) {
+  function assign(gs, p, T, S2, mode, rng, pin) { // pin = {i: group index, k: color} or null
+    var pi = pin ? pin.i : -1;
     var K = p.length, ground = mode !== 'white', nc = ground ? K + 1 : K, best = null, lnMin = Math.log(FMIN), lnMax = Math.log(GROW);
     function dev(x, lo, hi) { return 0.5 * Math.abs(x) + 10 * Math.max(0, lo - x, x - hi); }
     function cost(a, kg, ki) {
@@ -216,12 +217,12 @@ var Engine = (function () {
     if (mode === 'white') pairs.push([-1, -1]);
     pairs.forEach(function (pr) {
       for (var trial = 0; trial < (mode === 'two' ? 20 : 40); trial++) {
-        var a = gs.map(function () { return Math.floor(rng() * nc); }), c = cost(a, pr[0], pr[1]), better = true;
+        var a = gs.map(function (g, i) { return i === pi ? pin.k : Math.floor(rng() * nc); }), c = cost(a, pr[0], pr[1]), better = true;
         while (better) {
           better = false;
           for (var i = 0; i < a.length; i++) {
             for (var k = 0; k < nc; k++) {
-              if (a[i] === k) continue;
+              if (a[i] === k || i === pi) continue;
               var old = a[i]; a[i] = k;
               var c2 = cost(a, pr[0], pr[1]);
               if (c2 < c - 1e-9) { c = c2; better = true; } else a[i] = old;
@@ -348,10 +349,14 @@ var Engine = (function () {
     var S = o.sizeMm, p = o.percents, cov = o.coverage, S2 = S * S, T = cov / 100 * S2;
     var border = o.border === 'random' ? rng() < 0.5 : o.border === 'on';
     var lay = makeLayout(rng, S, border), gs = groupsOf(lay), nominal = sum(gs.map(function (x) { return x.area; })) / S2 * 100;
+    var fc = border && o.frameColor !== undefined && o.frameColor !== 'auto' ? parseInt(o.frameColor, 10) - 1 : -1;
+    if (!(fc >= 0 && fc < p.length)) fc = -1;
+    var pin = null;
+    if (fc >= 0) gs.forEach(function (g, i) { if (g.key === lay.frame + 'a') pin = { i: i, k: fc }; });
     var order = cov > Math.max(45, nominal * GROW * GROW) ? ['ground', 'two', 'white'] : ['white', 'ground', 'two'], best = null;
     order.forEach(function (mode) {
       if (best && best.err <= 3.5) return; // a mode hit the targets: skip the rest
-      var a = assign(gs, p, T, S2, mode, rng), r = a && tune(lay, a, p, cov);
+      var a = assign(gs, p, T, S2, mode, rng, pin), r = a && tune(lay, a, p, cov);
       if (r && (!best || r.err < best.err)) best = r;
     });
 
@@ -361,7 +366,7 @@ var Engine = (function () {
     // allowed mm2: channels/symmetry = numeric noise (+ the 4 open tile corners); features also = pointed petal tips
     var an = CK.analyze(groups, S), eps = 1 + 1e-4 * S2, epsTips = 1 + 0.01 * S2;
     var report = {
-      seed: seed, sizeMm: S, border: border, mode: best.mode,
+      seed: seed, sizeMm: S, border: border, frameColor: fc < 0 ? 'auto' : fc + 1, mode: best.mode,
       coverage: { target: cov, achieved: an.coverage },
       shares: p.map(function (x, k) { return { target: x, achieved: an.shares[k] }; }),
       thinFeatures: sum(an.thinFeatures), thinChannels: an.thinChannels, overlap: an.overlap, symmetry: an.symmetry.max,
@@ -369,6 +374,7 @@ var Engine = (function () {
     };
     if (Math.abs(an.coverage - cov) > TOL) report.warnings.push('coverage');
     if (report.shares.some(function (s) { return Math.abs(s.achieved - s.target) > TOL; })) report.warnings.push('shares');
+    if (fc >= 0 && Math.abs(an.shares[fc] - p[fc]) > TOL) report.warnings.push('frameColorConflict');
     if (an.thinChannels > eps) report.warnings.push('channels');
     if (report.thinFeatures > epsTips) report.warnings.push('features');
     if (an.symmetry.max > eps) report.warnings.push('symmetry');

@@ -82,6 +82,27 @@ CASES.forEach((c, i) => {
 });
 assert(!fails.length, 'engine cases off target: ' + fails.join(', '));
 
+// ---- frame color: the frame ring (sampled on its midline) lies entirely in the chosen group; border off ignores it ----
+function inGroup(shapes, x, y) {
+  let n = 0;
+  shapes.forEach(s => (typeof s[0][0] === 'number' ? [s] : s).forEach(r => {
+    for (let i = 0, j = r.length - 1; i < r.length; j = i++)
+      if ((r[i][1] > y) !== (r[j][1] > y) && x < (r[j][0] - r[i][0]) * (y - r[i][1]) / (r[j][1] - r[i][1]) + r[i][0]) n++;
+  }));
+  return n % 2 === 1;
+}
+[1, 2, 3].forEach(fcIdx => {
+  const S = 60, pc = [34, 33, 33], { groups, report: r } = Engine.generate({ seed: 7, sizeMm: S, colors: COLORS, percents: pc, coverage: 60, border: 'on', frameColor: fcIdx });
+  assert.strictEqual(r.frameColor, fcIdx);
+  for (let i = 1; i < 20; i++) {
+    const x = S * i / 20;
+    assert(inGroup(groups[fcIdx - 1], x, 0.5) && inGroup(groups[fcIdx - 1], 0.5, x), `frame not in color ${fcIdx} at ${x}`);
+  }
+  assert(!r.warnings.includes('symmetry') && !r.warnings.includes('overlap'), 'frameColor ' + fcIdx + ': ' + r.warnings);
+  console.log('frameColor', fcIdx, 'cov', r.coverage.achieved.toFixed(1), 'shares', r.shares.map(s => s.achieved.toFixed(1)).join('/'), r.warnings.length ? 'WARN ' + r.warnings : '');
+});
+assert.strictEqual(Engine.generate({ seed: 7, sizeMm: 60, colors: COLORS, percents: [34, 33, 33], coverage: 60, border: 'off', frameColor: 2 }).report.frameColor, 'auto');
+
 // ---- 3D: every mesh watertight (each directed edge once, reverse once), positive volume, volume matches analytics ----
 const Mesh = require('../js/mesh3mf.js'), fflate = require('../vendor/fflate.min.js');
 function check3d(label, groups, colors, size, opts, coverage) {

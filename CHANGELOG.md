@@ -47,13 +47,14 @@ Format: [Semantic Versioning](https://semver.org/) — v[major].[minor].[patch].
 
 ---
 
-## [1.2.0] – *Planned* (Phase P6b – Frame Color)
+## [1.2.0] – 2026-10-03 (Phase P6b – Frame Color)
 
 **User-selectable frame color in designs.**
 
 - "Frame color" form field: Auto, Raised 1, Raised 2, Raised 3 (enabled when border on).
 - Engine: pins frame group to chosen color in color-assignment search.
 - Tests: frame ring entirely in chosen color's group.
+- Warning `frameColorConflict` when the pinned frame color misses its share.
 
 ---
 
